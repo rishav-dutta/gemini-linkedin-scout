@@ -57,6 +57,8 @@ export function DiscoveryGallery({ onResumeUploaded, leads: initialLeads }: Disc
       if (!response.ok) {
         throw new Error(`Upload failed with status: ${response.status}`);
       }
+      // Optional: Wait 500ms so the user sees the spinner finish
+      await new Promise(resolve => setTimeout(resolve, 500));
       onResumeUploaded(); 
     } catch (error) {
       console.error('Error uploading resume:', error);
