@@ -47,7 +47,7 @@ export function DiscoveryGallery({ onResumeUploaded, leads: initialLeads }: Disc
     formData.append('resume', file);
 
     try {
-      const webhookUrl = import.meta.env.VITE_N8N_RESUME_WEBHOOK;
+      const webhookUrl = 'https://event-gcc-ranges-usage.trycloudflare.com/webhook-test/score-resume';
       if (webhookUrl) {
         await fetch(webhookUrl, {
           method: 'POST',
