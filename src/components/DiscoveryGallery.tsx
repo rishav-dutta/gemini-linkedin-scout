@@ -48,15 +48,19 @@ export function DiscoveryGallery({ onResumeUploaded, leads: initialLeads }: Disc
 
     try {
       const webhookUrl = 'https://event-gcc-ranges-usage.trycloudflare.com/webhook-test/score-resume';
-      if (webhookUrl) {
-        await fetch(webhookUrl, {
-          method: 'POST',
-          body: formData,
-        });
+      
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Upload failed with status: ${response.status}`);
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      onResumeUploaded();
+      // We removed the 2000ms timeout.
+      // The app will now wait for the 'Respond to Webhook' node in n8n.
+      onResumeUploaded(); 
     } catch (error) {
       console.error('Error uploading resume:', error);
       alert('Failed to upload resume');
