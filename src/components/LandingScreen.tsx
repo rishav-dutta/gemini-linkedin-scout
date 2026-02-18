@@ -63,7 +63,7 @@ export function LandingScreen({ onFindLeads }: LandingScreenProps) {
                 type="text"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="e.g., Google, Meta"
+                placeholder="e.g., Google, Meta, Stripe"
                 className="w-full px-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-transparent backdrop-blur-sm transition-all"
                 required
               />
