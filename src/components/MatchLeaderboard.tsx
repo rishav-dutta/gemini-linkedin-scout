@@ -98,10 +98,10 @@ export function MatchLeaderboard() {
                           {index + 1}
                         </div>
                         <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
-                          {lead.profile_picture_url ? (
+                          {lead.profile_image_url ? (
                             <img
-                              src={lead.profile_picture_url}
-                              alt={lead.name}
+                              src={lead.profile_image_url}
+                              alt={lead.full_name}
                               className="w-full h-full rounded-full object-cover"
                             />
                           ) : (
@@ -114,7 +114,7 @@ export function MatchLeaderboard() {
                         <div className="flex items-start justify-between gap-4 mb-2">
                           <div>
                             <h3 className="text-white font-semibold text-xl mb-1">
-                              {lead.name}
+                              {lead.full_name}
                             </h3>
                             <a
                               href={lead.linkedin_url}
