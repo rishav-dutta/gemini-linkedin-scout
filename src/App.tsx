@@ -22,14 +22,14 @@ function App() {
 
   const handleFindLeads = async (companyName: string, targetRole: string) => {
     try {
-      const response = await fetch('https://villas-equality-blues-leave.trycloudflare.com/webhook-test/find-leads', {
+      const response = await fetch(import.meta.env.VITE_N8N_SEARCH_WEBHOOK, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          company_name: 'FedEx',
-          role: 'Product Manager',
+          company_name: companyName,
+          role: targetRole,
         }),
       });
 
