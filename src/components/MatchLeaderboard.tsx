@@ -9,11 +9,33 @@ export function MatchLeaderboard() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
+    // 1. Initial fetch for any existing data
     fetchLeads();
+
+    // 2. Setup the Realtime Listener
+    const channel = supabase
+      .channel('relevance-updates')
+      .on(
+        'postgres_changes',
+        { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'linkedin_leads' 
+        },
+        (payload) => {
+          console.log('Realtime update received!', payload);
+          fetchLeads(); // Refresh list when n8n updates a score
+        }
+      )
+      .subscribe();
+
+    // 3. Cleanup on unmount
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchLeads = async () => {
-    setIsLoading(true);
     const { data, error } = await supabase
       .from('linkedin_leads')
       .select('*')
@@ -24,8 +46,11 @@ export function MatchLeaderboard() {
       console.error('Error fetching leads:', error);
     } else {
       setLeads(data || []);
+      // Only hide loading spinner once we have actual results
+      if (data && data.length > 0) {
+        setIsLoading(false);
+      }
     }
-    setIsLoading(false);
   };
 
   const toggleExpanded = (id: string) => {
