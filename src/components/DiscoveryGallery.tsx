@@ -178,8 +178,8 @@ export function DiscoveryGallery({ onResumeUploaded, leads: initialLeads }: Disc
                   <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center flex-shrink-0">
                     {lead.profile_picture_url ? (
                       <img
-                        src={lead.profile_picture_url}
-                        alt={lead.name}
+                        src={lead.profile_image_url}
+                        alt={lead.full_name}
                         className="w-full h-full rounded-full object-cover"
                       />
                     ) : (
@@ -188,8 +188,9 @@ export function DiscoveryGallery({ onResumeUploaded, leads: initialLeads }: Disc
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-white font-semibold text-lg mb-1 truncate">
-                      {lead.name}
+                      {lead.full_name}
                     </h3>
+                    <p className="text-cyan-400 text-sm mb-1">{lead.job_title}</p>
                     <a
                       href={lead.linkedin_url}
                       target="_blank"
@@ -201,7 +202,7 @@ export function DiscoveryGallery({ onResumeUploaded, leads: initialLeads }: Disc
                     </a>
                   </div>
                 </div>
-                <p className="text-gray-300 text-sm leading-relaxed">{lead.summary}</p>
+                <p className="text-gray-300 text-sm leading-relaxed">{lead.search_description}</p>
               </motion.div>
             ))}
           </motion.div>
