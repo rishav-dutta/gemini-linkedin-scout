@@ -47,7 +47,7 @@ export function DiscoveryGallery({ onResumeUploaded, leads: initialLeads }: Disc
     formData.append('resume', file);
 
     try {
-      const webhookUrl = import.meta.env.VITE_N8N_RESUME_WEBHOOK_URL;
+      const webhookUrl = import.meta.env.VITE_N8N_RESUME_WEBHOOK;
       if (webhookUrl) {
         await fetch(webhookUrl, {
           method: 'POST',
