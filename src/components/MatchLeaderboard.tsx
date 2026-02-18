@@ -44,12 +44,11 @@ export function MatchLeaderboard() {
 
     if (error) {
       console.error('Error fetching leads:', error);
+      setIsLoading(false); // Stop loading even on error
     } else {
       setLeads(data || []);
-      // Only hide loading spinner once we have actual results
-      if (data && data.length > 0) {
-        setIsLoading(false);
-      }
+      // Stop loading if we have data OR if the initial fetch is done
+      setIsLoading(false); 
     }
   };
 
