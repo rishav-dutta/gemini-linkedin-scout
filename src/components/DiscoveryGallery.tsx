@@ -182,6 +182,9 @@ export function DiscoveryGallery({ onResumeUploaded, leads: initialLeads }: Disc
                         src={lead.profile_image_url}
                         alt={lead.full_name}
                         className="w-full h-full rounded-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
                       />
                     ) : (
                       <User className="w-8 h-8 text-white" />
