@@ -21,8 +21,15 @@ function App() {
   const [leads, setLeads] = useState<Lead[]>([]);
 
   const handleFindLeads = async (companyName: string, targetRole: string) => {
+    // 1. HARDCODED URL - Matches your current active tunnel
+    const testUrl = 'https://event-gcc-ranges-usage.trycloudflare.com/webhook-test/find-leads';
+    
+    console.log('--- TEST START ---');
+    console.log('Calling URL:', testUrl);
+    console.log('With Data:', { company_name: companyName, role: targetRole });
+
     try {
-      const response = await fetch(import.meta.env.VITE_N8N_SEARCH_WEBHOOK, {
+      const response = await fetch(testUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -33,17 +40,25 @@ function App() {
         }),
       });
 
+      console.log('Server Status:', response.status);
+
       if (!response.ok) {
         throw new Error(`Webhook returned ${response.status}`);
       }
 
       const data = await response.json();
+      console.log('Server Response Data:', data);
+
+      // Handle both array and object responses from n8n
       const leadsArray = Array.isArray(data) ? data : data.leads || [];
 
       setLeads(leadsArray);
       setCurrentScreen('gallery');
+      console.log('--- TEST SUCCESS: MOVING TO GALLERY ---');
     } catch (error) {
-      console.error('Error triggering webhook:', error);
+      console.error('--- TEST FAILED ---');
+      console.error('Detailed Error:', error);
+      alert(`Connection failed: ${error instanceof Error ? error.message : 'Check Console'}`);
     }
   };
 
