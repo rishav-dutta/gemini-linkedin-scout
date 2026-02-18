@@ -176,7 +176,7 @@ export function DiscoveryGallery({ onResumeUploaded, leads: initialLeads }: Disc
               >
                 <div className="flex items-start gap-4 mb-4">
                   <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center flex-shrink-0">
-                    {lead.profile_picture_url ? (
+                    {lead.profile_image_url ? (
                       <img
                         src={lead.profile_image_url}
                         alt={lead.full_name}
