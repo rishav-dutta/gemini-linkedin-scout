@@ -57,9 +57,6 @@ export function DiscoveryGallery({ onResumeUploaded, leads: initialLeads }: Disc
       if (!response.ok) {
         throw new Error(`Upload failed with status: ${response.status}`);
       }
-
-      // We removed the 2000ms timeout.
-      // The app will now wait for the 'Respond to Webhook' node in n8n.
       onResumeUploaded(); 
     } catch (error) {
       console.error('Error uploading resume:', error);
