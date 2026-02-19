@@ -82,8 +82,19 @@ export function MatchLeaderboard({ initialLeads }: { initialLeads?: LinkedInLead
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-4 mb-2">
                         <div>
-                          <h3 className="text-white font-semibold text-xl mb-1">{lead.full_name}</h3>
-                          <a href={lead.linkedin_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-cyan-400 hover:text-cyan-300">
+                          <h3 className="text-white font-semibold text-xl mb-0.5">
+                            {lead.full_name}
+                          </h3>
+                          {/* 1. Added Job Title */}
+                          <p className="text-cyan-400 text-sm font-medium mb-2">
+                            {lead.job_title}
+                          </p>
+                          <a
+                            href={lead.linkedin_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-gray-400 hover:text-cyan-300 transition-colors"
+                          >
                             <Linkedin className="w-4 h-4" />
                             <span className="text-sm">View Profile</span>
                           </a>
