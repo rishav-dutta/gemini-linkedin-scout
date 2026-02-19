@@ -25,7 +25,7 @@ export function DiscoveryGallery({ onResumeUploaded, leads: initialLeads, target
     const { data, error } = await supabase
       .from('linkedin_leads')
       .select('*')
-      .eq('company', targetCompany) // FILTER: matches IDs 266-275 in your screenshot
+     .ilike('company', `%${targetCompany}%`) // FILTER: matches IDs 266-275 in your screenshot
       .order('created_at', { ascending: false });
 
     if (!error) {
