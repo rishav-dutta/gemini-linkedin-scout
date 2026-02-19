@@ -21,40 +21,32 @@ export function DiscoveryGallery({ onResumeUploaded, leads: initialLeads, target
 
   const fetchLeads = async () => {
     setIsLoading(true);
-    console.log('--- DB FETCH START ---');
-    console.log('Targeting Company:', targetCompany);
+    console.log('Fetching all leads to bypass API schema errors...');
 
     try {
-      // We use .ilike with wildcards (%) to bypass any hidden spacing issues
+      // Step 1: Get the latest leads without a DB-side filter to avoid the 400 error
       const { data, error } = await supabase
         .from('linkedin_leads')
         .select('*')
-        .ilike('company', `%${targetCompany}%`) 
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Supabase Error Detail:', error);
+        console.error('Database Error:', error.message);
+      } else if (data) {
+        // Step 2: Filter the data in JavaScript
+        // This is much safer if the API doesn't recognize the "company" column yet
+        const searchTerm = targetCompany.toLowerCase().trim();
+        const filtered = data.filter(lead => 
+          lead.company?.toLowerCase().includes(searchTerm)
+        );
         
-        // FALLBACK: If filtering fails, let's at least show the last 10 leads 
-        // to prove the connection works
-        const fallback = await supabase
-          .from('linkedin_leads')
-          .select('*')
-          .limit(10);
-        
-        if (fallback.data) {
-          console.log('Fallback triggered: Showing recent leads regardless of company');
-          setLeads(fallback.data);
-        }
-      } else {
-        console.log('Success! Leads found:', data?.length);
-        setLeads(data || []);
+        console.log(`Total Leads: ${data.length} | Matches for "${targetCompany}": ${filtered.length}`);
+        setLeads(filtered);
       }
     } catch (err) {
-      console.error('Unexpected Fetch Error:', err);
+      console.error('Unexpected Error:', err);
     } finally {
       setIsLoading(false);
-      console.log('--- DB FETCH END ---');
     }
   };
 
