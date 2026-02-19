@@ -60,7 +60,10 @@ function App() {
         />
       )}
       {currentScreen === 'leaderboard' && (
-        <MatchLeaderboard key="leaderboard" />
+        <MatchLeaderboard 
+          key="leaderboard" 
+          targetCompany={lastSearchedCompany} 
+        />
       )}
     </AnimatePresence>
   );
