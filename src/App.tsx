@@ -17,7 +17,7 @@ function App() {
     setLastSearchedCompany(companyName);
     
     // Switch to your PRODUCTION URL for sharing
-    const webhookUrl = 'https://event-gcc-ranges-usage.trycloudflare.com/webhook/find-leads';
+    const webhookUrl = 'https://sentences-items-pounds-chapter.trycloudflare.com/webhook/find-leads';
     
     try {
       const response = await fetch(webhookUrl, {
