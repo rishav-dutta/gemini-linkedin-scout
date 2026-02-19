@@ -3,11 +3,13 @@ import { ChevronDown, ChevronUp, Linkedin, Trophy, User } from 'lucide-react';
 import { useState } from 'react';
 import { LinkedInLead } from '../lib/supabase';
 
-export function MatchLeaderboard({ initialLeads }: { initialLeads?: LinkedInLead[] }) {
-  // 1. Initialize and SORT leads in descending order (highest score first)
-  const [leads] = useState<LinkedInLead[]>(
-    (initialLeads || []).sort((a, b) => (b.similarity_score || 0) - (a.similarity_score || 0))
-  );
+import { useEffect, useState } from 'react'; // Ensure useEffect is added to imports
+import { supabase, LinkedInLead } from '../lib/supabase';
+
+export function MatchLeaderboard() {
+  const [leads, setLeads] = useState<LinkedInLead[]>([]);
+  const [isLoading, setIsLoading] = useState(true); // Track loading state
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const toggleExpanded = (id: string) => {
