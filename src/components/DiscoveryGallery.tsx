@@ -57,9 +57,13 @@ export function DiscoveryGallery({ onResumeUploaded, leads: initialLeads }: Disc
       if (!response.ok) {
         throw new Error(`Upload failed with status: ${response.status}`);
       }
-      // Optional: Wait 500ms so the user sees the spinner finish
-      await new Promise(resolve => setTimeout(resolve, 500));
-      onResumeUploaded(); 
+
+      // 1. Parse the JSON response from n8n (the 10 scored leads)
+      const data = await response.json();
+      
+      // 2. Pass the actual data to the parent so it loads Screen 3 instantly
+      onResumeUploaded(data); 
+
     } catch (error) {
       console.error('Error uploading resume:', error);
       alert('Failed to upload resume');
