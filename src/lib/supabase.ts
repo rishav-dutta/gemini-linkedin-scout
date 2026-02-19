@@ -9,10 +9,10 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export interface LinkedInLead {
   id: string;
-  name: string;
+  full_name: string;
   company?: string; // Added this to support your company filtering
   linkedin_url: string;
-  profile_picture_url: string | null;
+  profile_image_url: string | null;
   summary: string;
   similarity_score: number | null;
   scoring_reasoning: string | null;
