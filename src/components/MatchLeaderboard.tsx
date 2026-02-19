@@ -1,28 +1,51 @@
 import { motion } from 'framer-motion';
 import { ChevronDown, ChevronUp, Linkedin, Trophy, User } from 'lucide-react';
-import { useState } from 'react';
-import { LinkedInLead } from '../lib/supabase';
-
-import { useEffect, useState } from 'react'; // Ensure useEffect is added to imports
+import { useEffect, useState } from 'react';
 import { supabase, LinkedInLead } from '../lib/supabase';
 
 export function MatchLeaderboard() {
   const [leads, setLeads] = useState<LinkedInLead[]>([]);
-  const [isLoading, setIsLoading] = useState(true); // Track loading state
+  const [isLoading, setIsLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  // 1. Trigger the data fetch as soon as the component mounts
+  useEffect(() => {
+    fetchLeads();
+  }, []);
+
+  const fetchLeads = async () => {
+    setIsLoading(true);
+    try {
+      // 2. Query the "Source of Truth" directly from Supabase
+      const { data, error } = await supabase
+        .from('linkedin_leads')
+        .select('*')
+        // Only pull leads that have been processed and scored by n8n
+        .not('similarity_score', 'is', null)
+        // Ensure the highest compatibility scores appear at the top
+        .order('similarity_score', { ascending: false });
+
+      if (error) throw error;
+      setLeads(data || []);
+    } catch (error) {
+      console.error('Error fetching leads:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const toggleExpanded = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
-  // Mark the top 3 as "Top Matches"
+  // Mark the top 3 as "Top Matches" for special styling
   const isTopMatch = (index: number) => index < 3;
 
-  if (!leads || leads.length === 0) {
+  // 3. Professional loading state to protect the UI during the fetch
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900 p-6 flex items-center justify-center">
-        <p className="text-gray-400 text-lg">No scored contacts yet. Upload a resume to get started.</p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900 flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
       </div>
     );
   }
@@ -38,7 +61,7 @@ export function MatchLeaderboard() {
           <Trophy className="w-10 h-10 text-yellow-400" />
           <div>
             <h1 className="text-4xl font-bold text-white mb-2">Best Matches</h1>
-            <p className="text-gray-400">Ranked by how well you align with them</p>
+            <p className="text-gray-400 text-lg">Ranked by how well you align with them</p>
           </div>
         </div>
 
@@ -53,8 +76,8 @@ export function MatchLeaderboard() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className={`backdrop-blur-xl bg-white/5 rounded-2xl border ${
-                  isTop ? 'border-green-400 shadow-lg shadow-green-500/30' : 'border-white/10'
+                className={`backdrop-blur-xl bg-white/5 rounded-2xl border transition-all ${
+                  isTop ? 'border-green-400 shadow-lg shadow-green-500/20' : 'border-white/10'
                 } overflow-hidden`}
               >
                 <div className="p-6">
@@ -66,13 +89,14 @@ export function MatchLeaderboard() {
                         {index + 1}
                       </div>
                       
-                      {/* FIX: Use profile_image_url to match n8n output */}
                       <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border border-white/10">
                         {lead.profile_image_url ? (
                           <img 
                             src={lead.profile_image_url} 
                             alt={lead.full_name} 
                             className="w-full h-full object-cover"
+                            // Bypass LinkedIn CDN security blocks
+                            referrerPolicy="no-referrer"
                             onError={(e) => { (e.target as HTMLImageElement).src = ''; }} 
                           />
                         ) : (
@@ -84,17 +108,12 @@ export function MatchLeaderboard() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-4 mb-2">
                         <div>
-                          <h3 className="text-white font-semibold text-xl mb-0.5">
-                            {lead.full_name}
-                          </h3>
-                          {/* 1. Added Job Title */}
-                          <p className="text-cyan-400 text-sm font-medium mb-2">
-                            {lead.job_title}
-                          </p>
-                          <a
-                            href={lead.linkedin_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <h3 className="text-white font-semibold text-xl mb-0.5">{lead.full_name}</h3>
+                          <p className="text-cyan-400 text-sm font-medium mb-2">{lead.job_title}</p>
+                          <a 
+                            href={lead.linkedin_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
                             className="inline-flex items-center gap-1 text-gray-400 hover:text-cyan-300 transition-colors"
                           >
                             <Linkedin className="w-4 h-4" />
@@ -111,7 +130,10 @@ export function MatchLeaderboard() {
                       <p className="text-gray-300 text-sm leading-relaxed mb-4">{lead.search_description}</p>
                       
                       {lead.scoring_reasoning && (
-                        <button onClick={() => toggleExpanded(lead.id)} className="flex items-center gap-2 text-cyan-400 text-sm font-medium">
+                        <button 
+                          onClick={() => toggleExpanded(lead.id)} 
+                          className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors text-sm font-medium"
+                        >
                           {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                           {isExpanded ? 'Hide Reasoning' : 'Show Reasoning'}
                         </button>
@@ -120,7 +142,11 @@ export function MatchLeaderboard() {
                   </div>
 
                   {isExpanded && lead.scoring_reasoning && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4 pt-4 border-t border-white/10">
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }} 
+                      animate={{ opacity: 1, height: 'auto' }} 
+                      className="mt-4 pt-4 border-t border-white/10"
+                    >
                       <h4 className="text-white font-semibold mb-2 text-sm">AI Analysis:</h4>
                       <p className="text-gray-300 text-sm leading-relaxed">{lead.scoring_reasoning}</p>
                     </motion.div>
