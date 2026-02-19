@@ -45,7 +45,7 @@ export function DiscoveryGallery({ onResumeUploaded, leads: initialLeads, target
     formData.append('resume', file);
 
     try {
-      const webhookUrl = 'https://event-gcc-ranges-usage.trycloudflare.com/webhook/score-resume';
+      const webhookUrl = 'https://sentences-items-pounds-chapter.trycloudflare.com/webhook/score-resume';
       const response = await fetch(webhookUrl, { method: 'POST', body: formData });
 
       if (!response.ok) throw new Error(`Upload failed: ${response.status}`);
