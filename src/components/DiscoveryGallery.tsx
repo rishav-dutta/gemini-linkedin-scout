@@ -21,14 +21,17 @@ export function DiscoveryGallery({ onResumeUploaded, leads: initialLeads, target
 
   const fetchLeads = async () => {
     setIsLoading(true);
-    // Query specifically for the company from Screen 1
+    console.log('Searching for Company:', targetCompany); // DEBUG 1
+
     const { data, error } = await supabase
       .from('linkedin_leads')
       .select('*')
-     .ilike('company', `%${targetCompany}%`) // FILTER: matches IDs 266-275 in your screenshot
-      .order('created_at', { ascending: false });
+      .ilike('company', `%${targetCompany}%`); // Use wildcards
 
-    if (!error) {
+    if (error) {
+      console.error('Supabase Error:', error.message); // DEBUG 2
+    } else {
+      console.log('Results Found:', data?.length); // DEBUG 3
       setLeads(data || []);
     }
     setIsLoading(false);
