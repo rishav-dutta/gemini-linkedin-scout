@@ -26,7 +26,7 @@ function App() {
     // 1. HARDCODED URL - Matches your current active tunnel
     const testUrl = 'https://event-gcc-ranges-usage.trycloudflare.com/webhook-test/find-leads';
     
-    console.log('--- TEST START ---');
+    console.log('--- TEST STAR ---');
     console.log('Calling URL:', testUrl);
     console.log('With Data:', { company_name: companyName, role: targetRole });
 
