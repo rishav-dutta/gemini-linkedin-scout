@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { supabase, LinkedInLead } from '../lib/supabase';
 
 interface DiscoveryGalleryProps {
-  onResumeUploaded: () => void;
-  leads?: (LinkedInLead | any)[];
+  onResumeUploaded: () => void; // Keeps only the navigation trigger
+  leads?: LinkedInLead[]; 
 }
 
 export function DiscoveryGallery({ onResumeUploaded, leads: initialLeads }: DiscoveryGalleryProps) {
@@ -58,13 +58,14 @@ export function DiscoveryGallery({ onResumeUploaded, leads: initialLeads }: Disc
         throw new Error(`Upload failed with status: ${response.status}`);
       }
 
-      // 1. Parse the JSON response from n8n (the 10 scored leads)
-      const data = await response.json();
+      // 1. Parse the success signal from n8n
+      const result = await response.json();
       
-      // 2. Pass the actual data to the parent so it loads Screen 3 instantly
-      onResumeUploaded(data); 
-
-    } catch (error) {
+      // 2. Move to the next screen only if n8n confirms the database update is done
+      if (result.status === 'success') {
+        onResumeUploaded(); 
+  
+      } catch (error) {
       console.error('Error uploading resume:', error);
       alert('Failed to upload resume');
     } finally {
