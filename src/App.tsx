@@ -23,7 +23,7 @@ function App() {
 
   const handleFindLeads = async (companyName: string, targetRole: string) => {
     // 1. HARDCODED URL - Matches your current active tunnel
-    const testUrl = 'https://event-gcc-ranges-usage.trycloudflare.com/webhook-test/find-leads';
+    const testUrl = 'https://sentences-items-pounds-chapter.trycloudflare.com/webhook/find-leads';
     
     console.log('--- TEST START ---');
     console.log('Calling URL:', testUrl);
