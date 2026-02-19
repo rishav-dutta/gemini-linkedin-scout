@@ -3,13 +3,17 @@ import { ChevronDown, ChevronUp, Linkedin, Trophy, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase, LinkedInLead } from '../lib/supabase';
 
-// 1. Add targetCompany to the props so the component knows what to filter for
-export function MatchLeaderboard({ targetCompany }: { targetCompany: string }) {
+// 1. We MUST define the prop interface here
+interface MatchLeaderboardProps {
+  targetCompany: string;
+}
+
+export function MatchLeaderboard({ targetCompany }: MatchLeaderboardProps) {
   const [leads, setLeads] = useState<LinkedInLead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // 2. Add targetCompany to the dependency array so it refreshes on new searches
+  // 2. This hook MUST watch targetCompany to trigger a re-fetch/re-filter
   useEffect(() => {
     fetchLeads();
   }, [targetCompany]);
@@ -25,12 +29,14 @@ export function MatchLeaderboard({ targetCompany }: { targetCompany: string }) {
 
       if (error) throw error;
 
-      // 3. Filter the data locally before setting the state
       if (data) {
+        // 3. THE FIX: Filter the results based on the targetCompany prop
         const searchTerm = targetCompany.toLowerCase().trim();
+        
         const filteredData = data.filter(lead => 
-          (lead.company || '').toLowerCase().includes(searchTerm)
+          lead.company?.toLowerCase().includes(searchTerm)
         );
+        
         setLeads(filteredData);
       }
     } catch (error) {
@@ -64,6 +70,7 @@ export function MatchLeaderboard({ targetCompany }: { targetCompany: string }) {
         <div className="mb-8 flex items-center gap-4">
           <Trophy className="w-10 h-10 text-yellow-400" />
           <div>
+            {/* Added targetCompany to the title for clarity */}
             <h1 className="text-4xl font-bold text-white mb-2">Best Matches at {targetCompany}</h1>
             <p className="text-gray-400 text-lg">Ranked by how well you align with them</p>
           </div>
@@ -112,7 +119,7 @@ export function MatchLeaderboard({ targetCompany }: { targetCompany: string }) {
                       <div className="flex items-start justify-between gap-4 mb-2">
                         <div>
                           <h3 className="text-white font-semibold text-xl mb-0.5">{lead.full_name}</h3>
-                          <p className="text-cyan-400 text-sm font-medium mb-2">{lead.job_title}</p>
+                          <p className="text-cyan-400 text-sm font-medium mb-2">{lead.job_title} @ {lead.company}</p>
                           <a 
                             href={lead.linkedin_url} 
                             target="_blank" 
