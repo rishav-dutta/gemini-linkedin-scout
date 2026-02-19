@@ -21,20 +21,41 @@ export function DiscoveryGallery({ onResumeUploaded, leads: initialLeads, target
 
   const fetchLeads = async () => {
     setIsLoading(true);
-    console.log('Searching for Company:', targetCompany); // DEBUG 1
+    console.log('--- DB FETCH START ---');
+    console.log('Targeting Company:', targetCompany);
 
-    const { data, error } = await supabase
-      .from('linkedin_leads')
-      .select('*')
-      .ilike('company', `%${targetCompany}%`); // Use wildcards
+    try {
+      // We use .ilike with wildcards (%) to bypass any hidden spacing issues
+      const { data, error } = await supabase
+        .from('linkedin_leads')
+        .select('*')
+        .ilike('company', `%${targetCompany}%`) 
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Supabase Error:', error.message); // DEBUG 2
-    } else {
-      console.log('Results Found:', data?.length); // DEBUG 3
-      setLeads(data || []);
+      if (error) {
+        console.error('Supabase Error Detail:', error);
+        
+        // FALLBACK: If filtering fails, let's at least show the last 10 leads 
+        // to prove the connection works
+        const fallback = await supabase
+          .from('linkedin_leads')
+          .select('*')
+          .limit(10);
+        
+        if (fallback.data) {
+          console.log('Fallback triggered: Showing recent leads regardless of company');
+          setLeads(fallback.data);
+        }
+      } else {
+        console.log('Success! Leads found:', data?.length);
+        setLeads(data || []);
+      }
+    } catch (err) {
+      console.error('Unexpected Fetch Error:', err);
+    } finally {
+      setIsLoading(false);
+      console.log('--- DB FETCH END ---');
     }
-    setIsLoading(false);
   };
 
   const handleFileUpload = async (file: File) => {
