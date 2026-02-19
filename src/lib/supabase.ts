@@ -13,7 +13,7 @@ export interface LinkedInLead {
   company?: string; // Added this to support your company filtering
   linkedin_url: string;
   profile_image_url: string | null;
-  summary: string;
+  search_description: string;
   similarity_score: number | null;
   scoring_reasoning: string | null;
   created_at: string;
