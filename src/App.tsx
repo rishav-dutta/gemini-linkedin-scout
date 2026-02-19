@@ -17,7 +17,6 @@ function App() {
     setLastSearchedCompany(companyName);
     
     // Switch to your PRODUCTION URL for sharing
-    //const webhookUrl = 'https://daisy-tion-arising-appear.trycloudflare.com/webhook/find-leads';
     const webhookUrl = import.meta.env.VITE_WEBHOOK_FIND_LEADS;
     
     try {
