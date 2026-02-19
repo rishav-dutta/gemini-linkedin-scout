@@ -20,7 +20,6 @@ function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('landing');
   const [leads, setLeads] = useState<Lead[]>([]);
   // This stores the results returned by your n8n Respond to Webhook node
-  const [scoredLeads, setScoredLeads] = useState<any[]>([]);
 
   const handleFindLeads = async (companyName: string, targetRole: string) => {
     // 1. HARDCODED URL - Matches your current active tunnel
@@ -65,12 +64,11 @@ function App() {
   };
 
   // We add 'incomingResults' to catch the data from response.json()
-  const handleResumeUploaded = (incomingResults?: any[]) => {
-    if (incomingResults) {
-      setScoredLeads(incomingResults); // Save the scores
-    }
-    setCurrentScreen('leaderboard');
-  };
+  const handleResumeUploaded = () => {
+  // Simply move to the next screen; the leaderboard 
+  // will fetch the data itself
+  setCurrentScreen('leaderboard');
+};
 
   return (
     <AnimatePresence mode="wait">
@@ -82,7 +80,7 @@ function App() {
       )}
       {currentScreen === 'leaderboard' && (
         // We pass the saved scores directly into the leaderboard
-        <MatchLeaderboard key="leaderboard" initialLeads={scoredLeads} />
+        <MatchLeaderboard key="leaderboard" />
       )}
     </AnimatePresence>
   );
