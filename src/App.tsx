@@ -19,6 +19,8 @@ interface Lead {
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('landing');
   const [leads, setLeads] = useState<Lead[]>([]);
+  // This stores the results returned by your n8n Respond to Webhook node
+  const [scoredLeads, setScoredLeads] = useState<any[]>([]);
 
   const handleFindLeads = async (companyName: string, targetRole: string) => {
     // 1. HARDCODED URL - Matches your current active tunnel
@@ -62,7 +64,11 @@ function App() {
     }
   };
 
-  const handleResumeUploaded = () => {
+  // We add 'incomingResults' to catch the data from response.json()
+  const handleResumeUploaded = (incomingResults?: any[]) => {
+    if (incomingResults) {
+      setScoredLeads(incomingResults); // Save the scores
+    }
     setCurrentScreen('leaderboard');
   };
 
@@ -75,7 +81,8 @@ function App() {
         <DiscoveryGallery key="gallery" onResumeUploaded={handleResumeUploaded} leads={leads} />
       )}
       {currentScreen === 'leaderboard' && (
-        <MatchLeaderboard key="leaderboard" />
+        // We pass the saved scores directly into the leaderboard
+        <MatchLeaderboard key="leaderboard" initialLeads={scoredLeads} />
       )}
     </AnimatePresence>
   );
