@@ -3,9 +3,13 @@ import { ChevronDown, ChevronUp, Linkedin, Trophy, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase, LinkedInLead } from '../lib/supabase';
 
-export function MatchLeaderboard() {
-  const [leads, setLeads] = useState<LinkedInLead[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+// 1. Accept initialLeads as a prop from App.tsx
+export function MatchLeaderboard({ initialLeads }: { initialLeads?: LinkedInLead[] }) {
+  // 2. Initialize leads with the passed data immediately
+  const [leads, setLeads] = useState<LinkedInLead[]>(initialLeads || []);
+  
+  // 3. Set loading to false if we already have data
+  const [isLoading, setIsLoading] = useState(!initialLeads || initialLeads.length === 0);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
