@@ -8,7 +8,7 @@ const supabaseAnonKey = 'sb_publishable_Wiik_spU6iLz8YpzLmWMCQ_lFECQtC8';
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export interface LinkedInLead {
-  id: string;
+  id: integer;
   full_name: string;
   company?: string; // Added this to support your company filtering
   linkedin_url: string;
