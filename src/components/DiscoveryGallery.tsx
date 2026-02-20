@@ -28,7 +28,8 @@ export function DiscoveryGallery({ onResumeUploaded, leads: initialLeads, target
       const { data, error } = await supabase
         .from('linkedin_leads')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .eq('search_id', currentSearchId);
 
       if (error) {
         console.error('Database Error:', error.message);
