@@ -24,6 +24,7 @@ export function MatchLeaderboard({ targetCompany }: MatchLeaderboardProps) {
       const { data, error } = await supabase
         .from('linkedin_leads')
         .select('*')
+        .eq('search_id', currentSearchId)
         .not('similarity_score', 'is', null)
         .order('similarity_score', { ascending: false });
 
