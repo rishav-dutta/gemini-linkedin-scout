@@ -15,6 +15,7 @@ function App() {
   const handleFindLeads = async (companyName: string, targetRole: string) => {
     // Save the company name immediately
     setLastSearchedCompany(companyName);
+    const currentSearchId = crypto.randomUUID();
     
     // Switch to your PRODUCTION URL for sharing
     const webhookUrl = import.meta.env.VITE_WEBHOOK_FIND_LEADS;
@@ -26,6 +27,7 @@ function App() {
         body: JSON.stringify({
           company_name: companyName,
           role: targetRole,
+          search_id: currentSearchId,
         }),
       });
 
