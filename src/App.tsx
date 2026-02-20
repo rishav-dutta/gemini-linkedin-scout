@@ -9,15 +9,17 @@ type Screen = 'landing' | 'gallery' | 'leaderboard';
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('landing');
   const [leads, setLeads] = useState<any[]>([]);
-  // Store the company name to filter the database query later
   const [lastSearchedCompany, setLastSearchedCompany] = useState('');
+  
+  // 1. Initialize the Search ID state
+  const [currentSearchId, setCurrentSearchId] = useState<string>('');
 
   const handleFindLeads = async (companyName: string, targetRole: string) => {
-    // Save the company name immediately
+    // 2. Generate the unique ID specifically when a search starts
+    const newSearchId = crypto.randomUUID();
+    setCurrentSearchId(newSearchId);
     setLastSearchedCompany(companyName);
-    const currentSearchId = crypto.randomUUID();
     
-    // Switch to your PRODUCTION URL for sharing
     const webhookUrl = import.meta.env.VITE_WEBHOOK_FIND_LEADS;
     
     try {
@@ -27,7 +29,7 @@ function App() {
         body: JSON.stringify({
           company_name: companyName,
           role: targetRole,
-          search_id: currentSearchId,
+          search_id: newSearchId, // Use the fresh ID here
         }),
       });
 
@@ -59,12 +61,14 @@ function App() {
           onResumeUploaded={handleResumeUploaded} 
           leads={leads}
           targetCompany={lastSearchedCompany} 
+          searchId={currentSearchId} // 3. Pass to Gallery
         />
       )}
       {currentScreen === 'leaderboard' && (
         <MatchLeaderboard 
           key="leaderboard" 
           targetCompany={lastSearchedCompany} 
+          searchId={currentSearchId} // 4. Pass to Leaderboard
         />
       )}
     </AnimatePresence>
