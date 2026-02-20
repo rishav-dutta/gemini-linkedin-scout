@@ -14,7 +14,7 @@ function App() {
 
   const handleFindLeads = async (companyName: string, targetRole: string) => {
     // Save the company name immediately
-    set LastSearchedCompany(companyName);
+    setLastSearchedCompany(companyName);
     const currentSearchId = crypto.randomUUID();
     
     // Switch to your PRODUCTION URL for sharing
