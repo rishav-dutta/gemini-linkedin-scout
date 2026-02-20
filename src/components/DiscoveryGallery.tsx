@@ -36,7 +36,7 @@ export function DiscoveryGallery({ onResumeUploaded, leads: initialLeads, target
       } else if (data) {
         // Step 2: Filter the data in JavaScript
         // This is much safer if the API doesn't recognize the "company" column yet
-        const searchTerm = targetCompany.toLowerCase().trim();
+        const searchTerm = targetCompany.toLowerCase().trim(); 
         const filtered = data.filter(lead => 
           lead.company?.toLowerCase().includes(searchTerm)
         );
