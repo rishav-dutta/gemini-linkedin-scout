@@ -75,7 +75,6 @@ export function MatchLeaderboard({ targetCompany, searchId }: MatchLeaderboardPr
           <div>
             <h1 className="text-4xl font-bold text-white mb-2">Best Matches at {targetCompany}</h1>
             <p className="text-gray-400 text-lg">Ranked by how well you align with them</p>
-            <p className="text-xs text-gray-600 mt-1">Session: {searchId}</p>
           </div>
         </div>
 
