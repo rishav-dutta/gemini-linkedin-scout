@@ -124,7 +124,6 @@ export function DiscoveryGallery({
                   <>
                     <Upload className="w-12 h-12 text-cyan-400" />
                     <p className="text-white font-semibold">Click or drag resume here</p>
-                    <p className="text-xs text-gray-500 underline">Session ID: {searchId}</p>
                   </>
                 )}
               </div>
