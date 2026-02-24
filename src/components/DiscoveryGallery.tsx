@@ -74,8 +74,20 @@ export function DiscoveryGallery({
 
     try {
       const webhookUrl = import.meta.env.VITE_WEBHOOK_SCORE_RESUME;
+      const authKey = import.meta.env.VITE_N8N_KEY;
+
+      // Create headers object
+      const headers: Record<string, string> = {};
+      
+      // ONLY add the header if the key exists in Vercel. 
+      // If VITE_N8N_KEY is missing, it sends NO header (safe for now).
+      if (authKey) {
+        headers['X-N8N-API-KEY'] = authKey;
+      }
+      
       const response = await fetch(webhookUrl, { 
-        method: 'POST', 
+        method: 'POST',
+        headers: headers,
         body: formData 
       });
 
