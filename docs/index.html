@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Gemini LinkedIn Scout — AI Networking Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:       #080C10;
+  --bg2:      #0D1117;
+  --bg3:      #131920;
+  --border:   #1C2530;
+  --cyan:     #00D4FF;
+  --cyan-dim: #0099CC;
+  --purple:   #7B61FF;
+  --green:    #00E5A0;
+  --text:     #C9D1D9;
+  --text-dim: #6E7B8A;
+  --white:    #F0F6FC;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ── GRID BACKGROUND ─────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── NAV ─────────────────────────────────────── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2.5rem;
+  height: 60px;
+  background: rgba(8,12,16,0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-logo .dot { color: var(--cyan); }
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+}
+
+.nav-links a {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover { color: var(--cyan); }
+
+.nav-cta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  padding: 0.4rem 1rem;
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  text-decoration: none;
+  letter-spacing: 0.06em;
+  transition: all 0.2s;
+}
+
+.nav-cta:hover {
+  background: var(--cyan);
+  color: var(--bg);
+}
+
+/* ── SECTIONS ────────────────────────────────── */
+section { position: relative; z-index: 1; }
+
+/* ── HERO ────────────────────────────────────── */
+#hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8rem 2rem 4rem;
+}
+
+.hero-eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: fadeUp 0.6s 0.1s forwards;
+}
+
+.hero-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(3rem, 8vw, 6.5rem);
+  line-height: 1.0;
+  color: var(--white);
+  letter-spacing: -0.03em;
+  margin-bottom: 1rem;
+  opacity: 0;
+  animation: fadeUp 0.7s 0.2s forwards;
+}
+
+.hero-title .accent { color: var(--cyan); }
+
+.hero-sub {
+  font-size: 1.15rem;
+  color: var(--text-dim);
+  max-width: 520px;
+  margin: 0 auto 2.5rem;
+  font-weight: 300;
+  opacity: 0;
+  animation: fadeUp 0.7s 0.35s forwards;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: fadeUp 0.7s 0.5s forwards;
+}
+
+.btn-primary {
+  padding: 0.75rem 1.75rem;
+  background: var(--cyan);
+  color: var(--bg);
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  letter-spacing: 0.03em;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover { background: #00b8dc; transform: translateY(-2px); }
+
+.btn-ghost {
+  padding: 0.75rem 1.75rem;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btn-ghost:hover { border-color: var(--cyan); color: var(--cyan); }
+
+.hero-stats {
+  display: flex;
+  gap: 3rem;
+  margin-top: 4rem;
+  opacity: 0;
+  animation: fadeUp 0.7s 0.65s forwards;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-num {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 2rem;
+  color: var(--white);
+  display: block;
+}
+
+.stat-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+}
+
+.stat-delta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--green);
+}
+
+/* ── FLOW ────────────────────────────────────── */
+#flow {
+  padding: 6rem 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.section-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(2rem, 4vw, 3rem);
+  color: var(--white);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.75rem;
+}
+
+.section-desc {
+  color: var(--text-dim);
+  font-weight: 300;
+  max-width: 520px;
+  margin-bottom: 3.5rem;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5px;
+  background: var(--border);
+}
+
+.step {
+  background: var(--bg2);
+  padding: 2.5rem 2rem;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s;
+}
+
+.step::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--cyan);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s;
+}
+
+.step:hover::before { transform: scaleX(1); }
+.step:hover { background: var(--bg3); }
+
+.step-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--cyan);
+  letter-spacing: 0.1em;
+  margin-bottom: 1.25rem;
+}
+
+.step-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--white);
+  margin-bottom: 0.75rem;
+}
+
+.step-desc {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  line-height: 1.65;
+}
+
+/* ── SCREENSHOT PLACEHOLDER ──────────────────── */
+.screenshot-strip {
+  margin-top: 3rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+}
+
+.screenshot-slot {
+  background: var(--bg2);
+  aspect-ratio: 16/10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px dashed var(--border);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.screenshot-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.screenshot-slot .slot-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.slot-icon { font-size: 1.5rem; opacity: 0.3; }
+
+/* ── ARCH ────────────────────────────────────── */
+#arch {
+  padding: 6rem 2rem;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.arch-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: start;
+}
+
+.arch-diagram {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 2rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  line-height: 1.9;
+  color: var(--text-dim);
+  position: relative;
+}
+
+.arch-diagram .hl { color: var(--cyan); }
+.arch-diagram .hl2 { color: var(--green); }
+.arch-diagram .hl3 { color: var(--purple); }
+.arch-diagram .dim { color: #3A4555; }
+
+.arch-diagram::before {
+  content: 'ARCHITECTURE';
+  position: absolute;
+  top: -10px;
+  left: 1.5rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  color: var(--cyan);
+  background: var(--bg);
+  padding: 0 0.5rem;
+}
+
+.workflows { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.workflow-card {
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  background: var(--bg);
+  position: relative;
+}
+
+.workflow-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--cyan);
+}
+
+.wf-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--cyan);
+  margin-bottom: 0.5rem;
+}
+
+.wf-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--white);
+  margin-bottom: 0.75rem;
+}
+
+.wf-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.wf-step {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  padding: 0.2rem 0.5rem;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.wf-arrow {
+  font-size: 0.6rem;
+  color: var(--border);
+  align-self: center;
+}
+
+/* ── STACK ───────────────────────────────────── */
+#stack {
+  padding: 6rem 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.stack-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  margin-top: 3rem;
+}
+
+.stack-card {
+  background: var(--bg2);
+  padding: 1.75rem 1.5rem;
+  transition: background 0.2s;
+}
+
+.stack-card:hover { background: var(--bg3); }
+
+.stack-layer {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-dim);
+  margin-bottom: 0.5rem;
+}
+
+.stack-tech {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--white);
+  margin-bottom: 0.35rem;
+}
+
+.stack-detail {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* ── DECISIONS ───────────────────────────────── */
+#decisions {
+  padding: 6rem 2rem;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.decisions-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.decisions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  margin-top: 3rem;
+}
+
+.decision-card {
+  background: var(--bg);
+  padding: 2rem;
+}
+
+.decision-q {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--white);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.decision-q::before {
+  content: 'Q';
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--cyan);
+  background: rgba(0,212,255,0.08);
+  border: 1px solid rgba(0,212,255,0.2);
+  padding: 0.15rem 0.4rem;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.decision-a {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  line-height: 1.7;
+  padding-left: 1.75rem;
+}
+
+/* ── METRICS ─────────────────────────────────── */
+#metrics {
+  padding: 6rem 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  margin-top: 3rem;
+}
+
+.metric-card {
+  background: var(--bg2);
+  padding: 2rem 1.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--cyan), transparent);
+}
+
+.metric-val {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 2.75rem;
+  color: var(--white);
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.metric-delta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--green);
+  margin-bottom: 0.75rem;
+}
+
+.metric-label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+/* ── ROADMAP ─────────────────────────────────── */
+#roadmap {
+  padding: 6rem 2rem;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+}
+
+.roadmap-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.roadmap-list {
+  margin-top: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--border);
+}
+
+.roadmap-item {
+  background: var(--bg);
+  padding: 1.25rem 1.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  transition: background 0.2s;
+}
+
+.roadmap-item:hover { background: var(--bg3); }
+
+.ri-status {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-dim);
+  flex-shrink: 0;
+}
+
+.ri-text {
+  font-size: 0.95rem;
+  color: var(--text-dim);
+}
+
+.ri-tag {
+  margin-left: auto;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+
+/* ── FOOTER CTA ──────────────────────────────── */
+#cta {
+  padding: 8rem 2rem;
+  text-align: center;
+  position: relative;
+}
+
+#cta::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%; transform: translateX(-50%);
+  width: 1px;
+  height: 4rem;
+  background: linear-gradient(to bottom, var(--border), transparent);
+}
+
+.cta-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  color: var(--white);
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+
+.cta-sub {
+  color: var(--text-dim);
+  font-weight: 300;
+  margin-bottom: 2.5rem;
+}
+
+footer {
+  border-top: 1px solid var(--border);
+  padding: 1.5rem 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.footer-left {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.footer-right {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.footer-right a {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-right a:hover { color: var(--cyan); }
+
+/* ── ANIMATIONS ──────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.6s, transform 0.6s;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── RESPONSIVE ──────────────────────────────── */
+@media (max-width: 900px) {
+  .steps, .screenshot-strip, .stack-grid { grid-template-columns: 1fr; }
+  .arch-inner, .decisions-grid, .metrics-grid { grid-template-columns: 1fr; }
+  .hero-stats { gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+  nav { padding: 0 1.25rem; }
+  .nav-links { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">✦ <span>LinkedIn<span class="dot">Scout</span></span></div>
+  <ul class="nav-links">
+    <li><a href="#flow">How It Works</a></li>
+    <li><a href="#arch">Architecture</a></li>
+    <li><a href="#stack">Stack</a></li>
+    <li><a href="#decisions">Decisions</a></li>
+    <li><a href="#metrics">Metrics</a></li>
+  </ul>
+  <a href="https://gemini-linkedin-scout.vercel.app" target="_blank" class="nav-cta">Open App ↗</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-eyebrow">AI Networking Tool · Solo 0→1 Build</div>
+  <h1 class="hero-title">Find the right<br/><span class="accent">people.</span></h1>
+  <p class="hero-sub">Enter a company + role. Get a ranked list of LinkedIn contacts scored against your resume — with AI reasoning for every match.</p>
+  <div class="hero-actions">
+    <a href="https://gemini-linkedin-scout.vercel.app" target="_blank" class="btn-primary">Try the App ↗</a>
+    <a href="https://github.com/rishav-dutta/gemini-linkedin-scout" target="_blank" class="btn-ghost">View on GitHub</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat">
+      <span class="stat-num">130</span>
+      <span class="stat-label">Visitors</span>
+      <span class="stat-delta">+141% MoM</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">177</span>
+      <span class="stat-label">Page Views</span>
+      <span class="stat-delta">+146% MoM</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">0%</span>
+      <span class="stat-label">Error Rate</span>
+      <span class="stat-delta">Live in production</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">75</span>
+      <span class="stat-label">Commits</span>
+      <span class="stat-delta">main branch</span>
+    </div>
+  </div>
+</section>
+
+<!-- FLOW -->
+<section id="flow">
+  <div class="section-label">Product Flow</div>
+  <h2 class="section-title reveal">Three steps.<br/>One ranked list.</h2>
+  <p class="section-desc reveal">No manual searching. No guessing who to reach out to.</p>
+
+  <div class="steps reveal">
+    <div class="step">
+      <div class="step-num">01 / TARGET</div>
+      <div class="step-title">Enter company + role</div>
+      <p class="step-desc">Type the company name and the department or role you're targeting — e.g. "Airtable" and "Product Manager." Hit Find Contacts.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02 / DISCOVER</div>
+      <div class="step-title">Upload your resume</div>
+      <p class="step-desc">The app returns a grid of relevant LinkedIn profiles at that company. Drop in your resume (PDF) to trigger the AI scoring engine.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03 / RANK</div>
+      <div class="step-title">Get scored matches</div>
+      <p class="step-desc">Gemini scores every contact against your resume and returns a ranked list with compatibility scores and AI reasoning per match.</p>
+    </div>
+  </div>
+
+  <!-- Screenshot placeholders — replace src="" with actual screenshot paths -->
+  <div class="screenshot-strip reveal">
+    <div class="screenshot-slot">
+      <img src="screenshots/01-landing.png" alt="Landing page"/>
+      <span class="slot-icon">🖥</span>
+      <span class="slot-label">Landing Page</span>
+    </div>
+    <div class="screenshot-slot">
+      <img src="screenshots/02-contacts.png" alt="Contacts grid"/>
+      <span class="slot-icon">👥</span>
+      <span class="slot-label">Contacts Grid</span>
+    </div>
+    <div class="screenshot-slot">
+      <img src="screenshots/03-ranked.png" alt="Ranked results"/>
+      <span class="slot-icon">🏆</span>
+      <span class="slot-label">Ranked Results</span>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="arch">
+  <div class="arch-inner">
+    <div>
+      <div class="section-label">Architecture</div>
+      <h2 class="section-title reveal">Four layers.<br/>Zero custom API server.</h2>
+      <p class="section-desc reveal" style="margin-bottom:2rem;">React talks directly to n8n via webhooks. n8n handles everything else — scraping, scoring, and writing results back to Supabase.</p>
+
+      <div class="arch-diagram reveal">
+<span class="hl">React Frontend</span> (Vercel)
+  │
+  │  HTTPS webhooks
+  ▼
+<span class="hl2">n8n Workflows</span> (DigitalOcean)
+  │                    │
+  ▼                    ▼
+<span class="dim">Apify Actor</span>        <span class="hl3">Google Gemini</span>
+<span class="dim">(scraping)</span>         <span class="hl3">(AI scoring)</span>
+  │
+  ▼
+<span class="hl">Supabase</span> (PostgreSQL)
+  ├── linkedin_leads
+  └── user_resumes
+      </div>
+    </div>
+
+    <div class="workflows reveal">
+      <div class="workflow-card">
+        <div class="wf-label">Workflow 1</div>
+        <div class="wf-title">LinkedIn Profile Finder</div>
+        <div class="wf-steps">
+          <span class="wf-step">Webhook</span><span class="wf-arrow">→</span>
+          <span class="wf-step">Web Scrape</span><span class="wf-arrow">→</span>
+          <span class="wf-step">Split</span><span class="wf-arrow">→</span>
+          <span class="wf-step">Supabase Upsert</span><span class="wf-arrow">→</span>
+          <span class="wf-step">Apify Enrich</span><span class="wf-arrow">→</span>
+          <span class="wf-step">Update Rows</span><span class="wf-arrow">→</span>
+          <span class="wf-step">Respond</span>
+        </div>
+      </div>
+      <div class="workflow-card">
+        <div class="wf-label">Workflow 2</div>
+        <div class="wf-title">Profile Relevance Engine</div>
+        <div class="wf-steps">
+          <span class="wf-step">Webhook</span><span class="wf-arrow">→</span>
+          <span class="wf-step">Extract PDF</span><span class="wf-arrow">→</span>
+          <span class="wf-step">SQL Fetch</span><span class="wf-arrow">→</span>
+          <span class="wf-step">Merge</span><span class="wf-arrow">→</span>
+          <span class="wf-step">Gemini Agent</span><span class="wf-arrow">→</span>
+          <span class="wf-step">Parse JSON</span><span class="wf-arrow">→</span>
+          <span class="wf-step">Score → DB</span><span class="wf-arrow">→</span>
+          <span class="wf-step">Respond</span>
+        </div>
+      </div>
+      <div class="workflow-card" style="--cyan:#00E5A0; border-left-color: var(--green);">
+        <div class="wf-label" style="color:var(--green)">Database Schema</div>
+        <div class="wf-title">Supabase Tables</div>
+        <div class="wf-steps">
+          <span class="wf-step">linkedin_leads</span>
+          <span class="wf-step">full_name</span>
+          <span class="wf-step">job_title</span>
+          <span class="wf-step">linkedin_url</span>
+          <span class="wf-step">full_profile</span>
+          <span class="wf-step">similarity (0–100)</span>
+          <span class="wf-step">user_resumes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STACK -->
+<section id="stack">
+  <div class="section-label">Tech Stack</div>
+  <h2 class="section-title reveal">Built with the right tools<br/>for a solo build.</h2>
+
+  <div class="stack-grid reveal">
+    <div class="stack-card">
+      <div class="stack-layer">Frontend</div>
+      <div class="stack-tech">TypeScript + React 18</div>
+      <div class="stack-detail">93.5% TypeScript. Vite 5.4 build. Tailwind CSS + Framer Motion.</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-layer">Backend</div>
+      <div class="stack-tech">n8n (self-hosted)</div>
+      <div class="stack-detail">Visual workflow orchestration on DigitalOcean. No custom API server needed.</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-layer">AI / LLM</div>
+      <div class="stack-tech">Google Gemini</div>
+      <div class="stack-detail">Structured output parsing via n8n AI Agent. Scores + reasons per contact.</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-layer">Scraping</div>
+      <div class="stack-tech">Apify</div>
+      <div class="stack-detail">curious_coder/linkedin-jobs-scraper actor for profile enrichment.</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-layer">Database</div>
+      <div class="stack-tech">Supabase</div>
+      <div class="stack-detail">PostgreSQL with auto-generated REST API. JS client embedded in frontend.</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-layer">Server</div>
+      <div class="stack-tech">DigitalOcean</div>
+      <div class="stack-detail">1 GB Droplet, Ubuntu 22.04, NYC1. Self-hosted for unlimited executions.</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-layer">Deployment</div>
+      <div class="stack-tech">Vercel</div>
+      <div class="stack-detail">Auto-deploy from main. Instant rollback. Web Analytics included.</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-layer">Dev Tools</div>
+      <div class="stack-tech">Claude + Cursor</div>
+      <div class="stack-detail">AI-assisted development from prototype through production.</div>
+    </div>
+  </div>
+</section>
+
+<!-- DECISIONS -->
+<section id="decisions">
+  <div class="decisions-inner">
+    <div class="section-label">Product Decisions</div>
+    <h2 class="section-title reveal">The why behind<br/>every choice.</h2>
+
+    <div class="decisions-grid reveal">
+      <div class="decision-card">
+        <div class="decision-q">Why n8n over a custom API server?</div>
+        <p class="decision-a">n8n allowed rapid workflow prototyping without maintaining a full backend codebase. Each node is visual and independently debuggable — critical for a solo build where iteration speed matters most.</p>
+      </div>
+      <div class="decision-card">
+        <div class="decision-q">Why self-hosted on DigitalOcean vs. n8n Cloud?</div>
+        <p class="decision-a">Full control over execution environment, no per-execution pricing limits, and the ability to run long Apify scraping jobs without cloud timeouts.</p>
+      </div>
+      <div class="decision-card">
+        <div class="decision-q">Why score contacts rather than just surface them?</div>
+        <p class="decision-a">Raw scraping results are noisy. Ranking by resume-to-profile alignment makes the outreach list immediately actionable — you know exactly who to prioritise and why, without any manual filtering.</p>
+      </div>
+      <div class="decision-card">
+        <div class="decision-q">Why TypeScript throughout?</div>
+        <p class="decision-a">Type safety on Supabase query responses and webhook payloads caught several schema mismatches during development. With 93.5% TS coverage across 75 commits, the codebase is significantly more maintainable.</p>
+      </div>
+      <div class="decision-card">
+        <div class="decision-q">Why Supabase?</div>
+        <p class="decision-a">Instant PostgreSQL with a UI-first table editor, an auto-generated REST API, and a JS client that works directly from the frontend — no ORM or migration pipeline for a solo build.</p>
+      </div>
+      <div class="decision-card">
+        <div class="decision-q">What did you cut for MVP?</div>
+        <p class="decision-a">User authentication and saved search history were deliberately deferred to ship a working end-to-end flow first. Both are buildable on the existing Supabase Auth stack when needed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- METRICS -->
+<section id="metrics">
+  <div class="section-label">Metrics</div>
+  <h2 class="section-title reveal">Live in production.</h2>
+  <p class="section-desc reveal">Vercel Web Analytics · Last 30 days</p>
+
+  <div class="metrics-grid reveal">
+    <div class="metric-card">
+      <div class="metric-val">130</div>
+      <div class="metric-delta">+141% period-over-period</div>
+      <div class="metric-label">Unique Visitors</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val">177</div>
+      <div class="metric-delta">+146% period-over-period</div>
+      <div class="metric-label">Page Views</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val">0%</div>
+      <div class="metric-delta">Across all edge requests</div>
+      <div class="metric-label">Error Rate</div>
+    </div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section id="roadmap">
+  <div class="roadmap-inner">
+    <div class="section-label">Roadmap</div>
+    <h2 class="section-title reveal">What's next.</h2>
+
+    <div class="roadmap-list reveal">
+      <div class="roadmap-item">
+        <div class="ri-status"></div>
+        <span class="ri-text">Saved search history per user</span>
+        <span class="ri-tag">Needs Auth</span>
+      </div>
+      <div class="roadmap-item">
+        <div class="ri-status"></div>
+        <span class="ri-text">Draft InMail / connection request generator per matched contact</span>
+        <span class="ri-tag">Gemini</span>
+      </div>
+      <div class="roadmap-item">
+        <div class="ri-status"></div>
+        <span class="ri-text">Batch company search — run the pipeline for multiple companies at once</span>
+        <span class="ri-tag">n8n</span>
+      </div>
+      <div class="roadmap-item">
+        <div class="ri-status"></div>
+        <span class="ri-text">Score threshold filter — show only contacts above a minimum %</span>
+        <span class="ri-tag">Frontend</span>
+      </div>
+      <div class="roadmap-item">
+        <div class="ri-status"></div>
+        <span class="ri-text">Export ranked contact list to CSV for CRM import</span>
+        <span class="ri-tag">Frontend</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <h2 class="cta-title reveal">Try it yourself.</h2>
+  <p class="cta-sub reveal">No account needed. Enter a company and a role to get started.</p>
+  <div class="reveal">
+    <a href="https://gemini-linkedin-scout.vercel.app" target="_blank" class="btn-primary">Open LinkedIn Scout ↗</a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-left">Built by Rishav Dutta · Simon Business School '26</div>
+  <div class="footer-right">
+    <a href="https://linkedin.com/in/duttarishav" target="_blank">LinkedIn</a>
+    <a href="https://github.com/rishav-dutta/gemini-linkedin-scout" target="_blank">GitHub</a>
+    <a href="https://gemini-linkedin-scout.vercel.app" target="_blank">Live App</a>
+  </div>
+</footer>
+
+<script>
+// Scroll reveal
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 80);
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+reveals.forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
