@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
+import { Analytics } from '@vercel/analytics/react';
 import { LandingScreen } from './components/LandingScreen';
 import { DiscoveryGallery } from './components/DiscoveryGallery';
 import { MatchLeaderboard } from './components/MatchLeaderboard';
@@ -71,6 +72,7 @@ function App() {
           searchId={currentSearchId} // 4. Pass to Leaderboard
         />
       )}
+      <Analytics />
     </AnimatePresence>
   );
 }
