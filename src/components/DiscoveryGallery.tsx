@@ -78,8 +78,11 @@ export function DiscoveryGallery({
 
       if (error) throw error;
 
+      // n8n replies with a text/plain body, so the JSON may arrive as a string
+      const parsed = typeof result === 'string' ? JSON.parse(result) : result;
+
       // Check for success signal from your n8n/backend workflow
-      if (result?.status === 'success' || result?.message === 'success') {
+      if (parsed?.status === 'success' || parsed?.message === 'success') {
         onResumeUploaded();
       }
     } catch (error) {
