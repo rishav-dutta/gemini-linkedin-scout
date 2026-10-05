@@ -31,11 +31,9 @@ export function DiscoveryGallery({
     console.log(`Fetching leads for Search ID: ${searchId}`);
 
     try {
-      // Step 1: Query Supabase specifically for this search session
+      // Step 1: Fetch this search session's leads (the table itself is not publicly readable)
       const { data, error } = await supabase
-        .from('linkedin_leads')
-        .select('*')
-        .eq('search_id', searchId) 
+        .rpc('get_leads_for_search', { p_search_id: searchId })
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -43,7 +41,7 @@ export function DiscoveryGallery({
       } else if (data) {
         // Step 2: Extra safety filter for the specific company name in JS
         const searchTerm = targetCompany.toLowerCase().trim(); 
-        const filtered = data.filter(lead => 
+        const filtered = (data as LinkedInLead[]).filter(lead => 
           lead.company?.toLowerCase().includes(searchTerm)
         );
         
