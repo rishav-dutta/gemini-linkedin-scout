@@ -22,11 +22,9 @@ export function MatchLeaderboard({ targetCompany, searchId }: MatchLeaderboardPr
   const fetchLeads = async () => {
     setIsLoading(true);
     try {
-      // 1. Fetch only leads tied to the specific search session
+      // 1. Fetch only leads tied to the specific search session (the table itself is not publicly readable)
       const { data, error } = await supabase
-        .from('linkedin_leads')
-        .select('*')
-        .eq('search_id', searchId)
+        .rpc('get_leads_for_search', { p_search_id: searchId })
         .not('similarity_score', 'is', null)
         .order('similarity_score', { ascending: false });
 
@@ -36,7 +34,7 @@ export function MatchLeaderboard({ targetCompany, searchId }: MatchLeaderboardPr
         // 2. Filter the results based on the targetCompany prop locally
         const searchTerm = targetCompany.toLowerCase().trim();
         
-        const filteredData = data.filter(lead => 
+        const filteredData = (data as LinkedInLead[]).filter(lead => 
           lead.company?.toLowerCase().includes(searchTerm)
         );
         
