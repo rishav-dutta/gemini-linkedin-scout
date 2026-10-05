@@ -1,0 +1,106 @@
+{
+  "name": "Supabase Keep-Alive",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "daysInterval": 2,
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "name": "Every 2 days",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -256,
+        112
+      ],
+      "id": "042122ff-a013-491b-a1e6-e1dba3ac87d2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://eqipaeameimazivwwrrm.supabase.co/rest/v1/rpc/get_leads_for_search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "YOUR_SUPABASE_ANON_KEY"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_SUPABASE_ANON_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"p_search_id\": \"00000000-0000-0000-0000-000000000000\"}",
+        "options": {}
+      },
+      "name": "Ping Supabase API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "alwaysOutputData": true,
+      "id": "51fced24-8d63-4da9-8a06-1a068ddb2b9e",
+      "notes": "Asks the leads function for a made-up search ID. Returns [] and touches no data; it only counts as activity so the free Supabase project isn't paused."
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select 1 as keep_alive",
+        "options": {}
+      },
+      "name": "Ping database",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        208
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "id": "eb7739a9-0db6-4888-86f7-ead38b4a42e9",
+      "credentials": {
+        "postgres": {
+          "id": "gw1ZfzaClLagb7Jx",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every 2 days": {
+      "main": [
+        [
+          {
+            "node": "Ping Supabase API",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Ping database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

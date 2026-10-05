@@ -3,13 +3,13 @@ import { AnimatePresence } from 'framer-motion';
 import { LandingScreen } from './components/LandingScreen';
 import { DiscoveryGallery } from './components/DiscoveryGallery';
 import { MatchLeaderboard } from './components/MatchLeaderboard';
-import { supabase, functionErrorMessage } from './lib/supabase';
+import { supabase, functionErrorMessage, type LinkedInLead } from './lib/supabase';
 
 type Screen = 'landing' | 'gallery' | 'leaderboard';
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('landing');
-  const [leads, setLeads] = useState<any[]>([]);
+  const [leads, setLeads] = useState<LinkedInLead[]>([]);
   const [lastSearchedCompany, setLastSearchedCompany] = useState('');
   
   // 1. Initialize the Search ID state

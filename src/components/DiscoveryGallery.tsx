@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Linkedin, Upload, User } from 'lucide-react';
+import { Upload, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase, LinkedInLead, functionErrorMessage } from '../lib/supabase';
 

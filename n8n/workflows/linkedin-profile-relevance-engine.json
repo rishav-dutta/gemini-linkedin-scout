@@ -1,0 +1,719 @@
+{
+  "name": "Linkedin Profile Relevance Engine",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "score-resume",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*",
+          "binaryPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -208,
+        176
+      ],
+      "id": "eeb5f3a8-7c8e-4683-87fd-f6bb2bb73c0b",
+      "name": "Webhook",
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "10cBbqeCWTfIer8D",
+          "name": "Proxy Secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "=data0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        176
+      ],
+      "id": "0e0abb51-db93-4ecc-b626-5a224a05daf7",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT company, linkedin_url, full_profile_markdown\nFROM linkedin_leads\nWHERE search_id = $1",
+        "options": {
+          "queryReplacement": "={{ $('Webhook').first().json.body.search_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        416,
+        176
+      ],
+      "id": "ebce82b4-d135-42b4-b0d6-5e781862a3bd",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "gw1ZfzaClLagb7Jx",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the candidate's resume against the LinkedIn profiles provided. \n\n--- CANDIDATE RESUME ---\n{{ $('Edit Fields1').first().json.text }}\n\nLINKEDIN PROFILES:\n{{ $(\"Execute a SQL query\").all().map(item => \"URL: \" + item.json.linkedin_url + \"\\nPROFILE: \" + item.json.full_profile_markdown).join('\\n\\n--- NEXT PROFILE ---\\n\\n') }}\n\nTASK:\n1. Compare the skills and experience in the resume to each LinkedIn profile.\n2. For each profile, provide a 'similarity_score' from 0 to 100 based on how well the candidate's experience matches that profile's current role and skills.\n3. Provide a 'scoring_reasoning' for the score.\n4. You MUST return the output as a clean JSON list of objects.\n5. Return exactly {{ $('Execute a SQL query').all().length }} objects, one per profile above. Copy each linkedin_url exactly from a \"URL:\" line above. Never score the candidate's own LinkedIn profile or any URL found in the resume.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a precise Recruitment Scout. Do not make up information. Use only the provided profiles and resume to generate scores.\n\nYou will receive multiple profiles. Please score each one individually.\n\nStrictly output results ONLY for the profiles found in the 'Execute a SQL query' input. If only one profile is provided, return exactly one score.",
+          "batching": {
+            "batchSize": 1
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        624,
+        176
+      ],
+      "id": "88040c10-57a1-4ab3-ba20-3fe4c11c7378",
+      "name": "AI Agent",
+      "executeOnce": true,
+      "notesInFlow": false,
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "maxTries": 3
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        544,
+        384
+      ],
+      "id": "c9fc0eb5-1648-4dcf-9cfe-19f0291a80da",
+      "name": "Google Gemini Chat Model",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "tpQQfEUaMdlgjZKr",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "[\n  {\n    \"linkedin_url\": \"https://www.linkedin.com/in/example-profile\",\n    \"similarity_score\": 85,\n    \"scoring_reasoning\": \"Match based on Product Management experience in logistics.\"\n  }\n]"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        800,
+        384
+      ],
+      "id": "ef058e92-11f0-44e0-b89c-4c5370a6f397",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        928,
+        176
+      ],
+      "id": "e7835bfc-e3ec-4c7c-a780-8d094363935f",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "linkedin_leads",
+          "mode": "list",
+          "cachedResultName": "linkedin_leads"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "similarity_score": "={{ $json.output.similarity_score }}",
+            "scoring_reasoning": "={{ $json.output.scoring_reasoning }}",
+            "linkedin_url": "={{ $json.output.linkedin_url }}",
+            "resume_name": "={{ $('Edit Fields1').item.json.resume_name }}",
+            "modified_at": "={{ $json.output.linkedin_url ? $now : null }}",
+            "search_id": "={{ $('Webhook').first().json.body.search_id }}"
+          },
+          "matchingColumns": [
+            "linkedin_url",
+            "search_id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "full_name",
+              "displayName": "full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "job_title",
+              "displayName": "job_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "profile_image_url",
+              "displayName": "profile_image_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "linkedin_url",
+              "displayName": "linkedin_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "search_description",
+              "displayName": "search_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "full_profile_markdown",
+              "displayName": "full_profile_markdown",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "similarity_score",
+              "displayName": "similarity_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "scoring_reasoning",
+              "displayName": "scoring_reasoning",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "resume_name",
+              "displayName": "resume_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "modified_at",
+              "displayName": "modified_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "target_role",
+              "displayName": "target_role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "search_id",
+              "displayName": "search_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1296,
+        176
+      ],
+      "id": "ee74924b-a7c9-46f9-a112-621df5103913",
+      "name": "Update rows in a table1",
+      "credentials": {
+        "postgres": {
+          "id": "gw1ZfzaClLagb7Jx",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"resume_name\": \"{{ $('Webhook').first().binary.data0.fileName }}\"\n}",
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        176
+      ],
+      "id": "9526740a-da04-4158-8351-626e75835d54",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://eqipaeameimazivwwrrm.supabase.co/storage/v1/object/resumes/{{ $binary.data0.fileName }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/pdf"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ec2a5421-9245-45b3-80bd-9e00556c1693",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "wREcV4N46W3S3L5Q",
+          "name": "Supabase Storage"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "32470218-e011-4d02-866d-d733c83d62f9",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "user_resumes",
+          "mode": "list",
+          "cachedResultName": "user_resumes"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "raw_resume_text": "={{ $json.text }}",
+            "resume_name": "={{ $json.resume_name }}",
+            "candidate_name": "={{ $json.text.split('\\n')[0].trim() }}",
+            "resume_url": "=https://eqipaeameimazivwwrrm.supabase.co/storage/v1/object/public/{{ $json.Key }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "resume_name",
+              "displayName": "resume_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "resume_url",
+              "displayName": "resume_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "upload_time",
+              "displayName": "upload_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "raw_resume_text",
+              "displayName": "raw_resume_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "candidate_name",
+              "displayName": "candidate_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "company_searched_for",
+              "displayName": "company_searched_for",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        624,
+        0
+      ],
+      "id": "43b323b5-1f88-473f-bafb-ec330e84f0ef",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "gw1ZfzaClLagb7Jx",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "{\"status\": \"success\"}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1504,
+        176
+      ],
+      "id": "1dda8329-22a8-4156-9893-41704c4e796a",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9389ea6c-5af0-4691-8d83-3a17a14627b5",
+              "leftValue": "={{ $('Execute a SQL query').all().map(i => i.json.linkedin_url).includes($json.output.linkedin_url) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        1104,
+        176
+      ],
+      "id": "4986a7e0-5575-4168-a733-a854b9f199fe",
+      "name": "Filter"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update rows in a table1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Update rows in a table1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
