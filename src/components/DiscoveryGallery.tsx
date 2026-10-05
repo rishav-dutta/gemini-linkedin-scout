@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Linkedin, Upload, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { supabase, LinkedInLead } from '../lib/supabase';
+import { supabase, LinkedInLead, functionErrorMessage } from '../lib/supabase';
 
 interface DiscoveryGalleryProps {
   onResumeUploaded: () => void;
@@ -71,35 +71,20 @@ export function DiscoveryGallery({
     formData.append('target_company', targetCompany);
 
     try {
-      const webhookUrl = import.meta.env.VITE_WEBHOOK_SCORE_RESUME;
-      const authKey = import.meta.env.VITE_N8N_KEY;
-
-      // Create headers object
-      const headers: Record<string, string> = {};
-      
-      // ONLY add the header if the key exists in Vercel. 
-      // If VITE_N8N_KEY is missing, it sends NO header (safe for now).
-      if (authKey) {
-        headers['X-N8N-API-KEY'] = authKey;
-      }
-      
-      const response = await fetch(webhookUrl, { 
-        method: 'POST',
-        headers: headers,
-        body: formData 
+      // Goes through the n8n-proxy Edge Function (validation, rate limit, secret)
+      const { data: result, error } = await supabase.functions.invoke('n8n-proxy/score-resume', {
+        body: formData,
       });
 
-      if (!response.ok) throw new Error(`Upload failed: ${response.status}`);
+      if (error) throw error;
 
-      const result = await response.json();
-      
       // Check for success signal from your n8n/backend workflow
-      if (result.status === 'success' || result.message === 'success') {
+      if (result?.status === 'success' || result?.message === 'success') {
         onResumeUploaded();
       }
     } catch (error) {
       console.error('Error during resume processing:', error);
-      alert('Failed to upload and process resume. Check your backend logs.');
+      alert(await functionErrorMessage(error, 'Failed to upload and process resume. Please try again.'));
     } finally {
       setIsScanning(false);
     }

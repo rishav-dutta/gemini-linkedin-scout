@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import { LandingScreen } from './components/LandingScreen';
 import { DiscoveryGallery } from './components/DiscoveryGallery';
 import { MatchLeaderboard } from './components/MatchLeaderboard';
+import { supabase, functionErrorMessage } from './lib/supabase';
 
 type Screen = 'landing' | 'gallery' | 'leaderboard';
 
@@ -20,29 +21,26 @@ function App() {
     setCurrentSearchId(newSearchId);
     setLastSearchedCompany(companyName);
     
-    const webhookUrl = import.meta.env.VITE_WEBHOOK_FIND_LEADS;
-    
     try {
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      // Goes through the n8n-proxy Edge Function, which validates, rate-limits
+      // and forwards to n8n with a secret the browser never sees
+      const { data, error } = await supabase.functions.invoke('n8n-proxy/find-leads', {
+        body: {
           company_name: companyName,
           role: targetRole,
           search_id: newSearchId, // Use the fresh ID here
-        }),
+        },
       });
 
-      if (!response.ok) throw new Error(`Webhook returned ${response.status}`);
+      if (error) throw error;
 
-      const data = await response.json();
-      const leadsArray = Array.isArray(data) ? data : data.leads || [];
+      const leadsArray = Array.isArray(data) ? data : data?.leads || [];
 
       setLeads(leadsArray);
       setCurrentScreen('gallery');
     } catch (error) {
       console.error('Search failed:', error);
-      alert('Connection failed. Please check your n8n tunnel.');
+      alert(await functionErrorMessage(error, 'Search failed. Please try again.'));
     }
   };
 
