@@ -10,8 +10,8 @@ jobs:
     name: Lint, typecheck, build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -24,8 +24,11 @@ jobs:
     name: Type-check Edge Function
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - run: deno check supabase/functions/n8n-proxy/index.ts
+      # Runs from the function folder so its deno.json applies (Deno manages the
+      # npm packages itself instead of looking for the website's node_modules)
+      - run: deno check index.ts
+        working-directory: supabase/functions/n8n-proxy
