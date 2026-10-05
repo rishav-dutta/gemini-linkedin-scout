@@ -11,7 +11,7 @@ interface MatchLeaderboardProps {
 export function MatchLeaderboard({ targetCompany, searchId }: MatchLeaderboardProps) {
   const [leads, setLeads] = useState<LinkedInLead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   useEffect(() => {
     if (searchId) {
@@ -47,7 +47,7 @@ export function MatchLeaderboard({ targetCompany, searchId }: MatchLeaderboardPr
     }
   };
 
-  const toggleExpanded = (id: string) => {
+  const toggleExpanded = (id: number) => {
     setExpandedId(expandedId === id ? null : id);
   };
 

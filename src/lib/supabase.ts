@@ -1,6 +1,6 @@
 import { createClient, FunctionsHttpError } from '@supabase/supabase-js';
 
-// Bolt automatically manages these variables now that you've connected
+// Set in .env.local for development and in the Vercel project settings for production (see .env.example)
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -17,14 +17,14 @@ export async function functionErrorMessage(error: unknown, fallback: string): Pr
 }
 
 export interface LinkedInLead {
-  id: string; // Changed to string as Supabase UUIDs/IDs are usually handled as strings in TS
+  id: number;
   full_name: string;
   job_title: string;
   company?: string;
   linkedin_url: string;
   profile_image_url: string | null;
   search_description: string;
-  similarity_score: number | null; // Use 'number' instead of 'integer' for TypeScript
+  similarity_score: number | null;
   scoring_reasoning: string | null;
-  created_at: string; // Use 'string' for ISO timestamps in TypeScript
+  created_at: string;
 }

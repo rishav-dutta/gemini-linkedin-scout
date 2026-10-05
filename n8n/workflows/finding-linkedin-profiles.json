@@ -1,0 +1,621 @@
+{
+  "name": "Finding Linkedin Profiles",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "MapSearch",
+        "operation": "search",
+        "query": "={{ 'site:linkedin.com/in/ ' + $json.body.company_name + ' ' + $json.body.role + ' \"United States\"' }}",
+        "sources": "={{ [\"web\"] }}",
+        "limit": 4,
+        "requestOptions": {}
+      },
+      "type": "@mendable/n8n-nodes-firecrawl.firecrawl",
+      "typeVersion": 1,
+      "position": [
+        192,
+        0
+      ],
+      "id": "39e4fbb8-d990-4548-a46e-c43a8d7eb46a",
+      "name": "Search the web and scrape results",
+      "credentials": {
+        "firecrawlApi": {
+          "id": "h0FGL581fr0K4KaQ",
+          "name": "Firecrawl account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "linkedin_leads",
+          "mode": "list",
+          "cachedResultName": "linkedin_leads"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "full_name": "={{ $json.title.split(' - ')[0] }}",
+            "linkedin_url": "={{ decodeURIComponent($json.url).replace(/\\/\\/[a-z]{2}\\.linkedin\\.com/, \"//www.linkedin.com\").split('?')[0].replace(/\\/$/, \"\").replace(/\\/[a-z]{2}$/, \"\") }}",
+            "job_title": "={{ $json.title.split(' - ')[1] }}",
+            "search_description": "={{ $json.description }}",
+            "company": "={{ $('Webhook').item.json.body.company_name }}",
+            "created_at": "={{ $json ? $now : null }}",
+            "target_role": "={{ $('Webhook').item.json.body.role }}",
+            "search_id": "={{ $('Webhook').item.json.body.search_id }}",
+            "similarity_score": 0,
+            "modified_at": "={{ $json ? $now : null }}"
+          },
+          "matchingColumns": [
+            "search_id",
+            "linkedin_url"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "full_name",
+              "displayName": "full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "job_title",
+              "displayName": "job_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "profile_image_url",
+              "displayName": "profile_image_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "linkedin_url",
+              "displayName": "linkedin_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "search_description",
+              "displayName": "search_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "full_profile_markdown",
+              "displayName": "full_profile_markdown",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "similarity_score",
+              "displayName": "similarity_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "scoring_reasoning",
+              "displayName": "scoring_reasoning",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "resume_name",
+              "displayName": "resume_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "modified_at",
+              "displayName": "modified_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "target_role",
+              "displayName": "target_role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "search_id",
+              "displayName": "search_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        608,
+        0
+      ],
+      "id": "e732ef2f-c631-4a99-885a-7b9fa7b735d9",
+      "name": "Insert or update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "gw1ZfzaClLagb7Jx",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data.web",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        400,
+        0
+      ],
+      "id": "d3276cf7-14d4-4ca7-b326-b58e4e634cce",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "linkedin_url",
+              "renameField": true,
+              "outputFieldName": "urls"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        816,
+        0
+      ],
+      "id": "54698a0b-4489-44ac-90c5-e058f5d4f33b",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorSource": "store",
+        "actorId": {
+          "__rl": true,
+          "value": "LpVuK3Zozwuipa5bp",
+          "mode": "list",
+          "cachedResultName": "LinkedIn Profile Scraper + Email ✅ No Cookies (harvestapi/linkedin-profile-scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/LpVuK3Zozwuipa5bp/input"
+        },
+        "customBody": "={\n    \"profileScraperMode\": \"Profile details no email ($4 per 1k)\",\n    \"queries\": {{ JSON.stringify($json.urls) }}\n}",
+        "timeout": 300000
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        0
+      ],
+      "id": "024874f0-1343-49ff-bce2-70339ce29048",
+      "name": "Run an Actor and get dataset",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "apifyApi": {
+          "id": "V3ghNmCH9Wd8ymaQ",
+          "name": "Apify account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "linkedin_leads",
+          "mode": "list",
+          "cachedResultName": "linkedin_leads"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "linkedin_url": "={{ $json.linkedinUrl }}",
+            "profile_image_url": "={{ $json.photo }}",
+            "full_profile_markdown": "={{ $json.about || \"No summary provided.\" }}  Professional Experience: {{ $json.experience.map(job =>    `- ${job.position} at ${job.companyName} (${job.duration})\\n  Description: ${job.description || 'No description provided'}` ).join('\\n\\n') }}",
+            "search_id": "={{ $('Webhook').first().json.body.search_id }}"
+          },
+          "matchingColumns": [
+            "linkedin_url",
+            "search_id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "full_name",
+              "displayName": "full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "job_title",
+              "displayName": "job_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "profile_image_url",
+              "displayName": "profile_image_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "linkedin_url",
+              "displayName": "linkedin_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "search_description",
+              "displayName": "search_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "full_profile_markdown",
+              "displayName": "full_profile_markdown",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "similarity_score",
+              "displayName": "similarity_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "scoring_reasoning",
+              "displayName": "scoring_reasoning",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "resume_name",
+              "displayName": "resume_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "modified_at",
+              "displayName": "modified_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "target_role",
+              "displayName": "target_role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "search_id",
+              "displayName": "search_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1232,
+        0
+      ],
+      "id": "0445b1c9-1cfd-46ab-a137-623bc11da299",
+      "name": "Update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "gw1ZfzaClLagb7Jx",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "find-leads",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e2246e73-7e8b-4af4-b6d8-5e9dc0346726",
+      "name": "Webhook",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "10cBbqeCWTfIer8D",
+          "name": "Proxy Secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "{\"status\": \"success\"}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1424,
+        0
+      ],
+      "id": "d801cf66-ec85-4bf4-8d17-63b602a9aaf4",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "connections": {
+    "Search the web and scrape results": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert or update rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Insert or update rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Run an Actor and get dataset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run an Actor and get dataset": {
+      "main": [
+        [
+          {
+            "node": "Update rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Search the web and scrape results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
