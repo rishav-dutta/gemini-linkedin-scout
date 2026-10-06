@@ -27,6 +27,9 @@ export interface LinkedInLead {
   similarity_score: number | null;
   scoring_reasoning: string | null;
   created_at: string;
+  // False until n8n has saved the person's full profile (Apify). Missing if the
+  // database function predates it, which the app treats as ready.
+  enriched?: boolean;
 }
 // n8n saves every new lead with similarity_score 0, and 0 is also a real score,
 // so a lead counts as scored once Gemini has written its reasoning.
