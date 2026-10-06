@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { ChevronDown, ChevronUp, Linkedin, Trophy, User } from 'lucide-react';
 import { useState } from 'react';
-import { isScored } from '../lib/supabase';
+import { isScored, type LinkedInLead } from '../lib/supabase';
 import { useLeads } from '../lib/useLeads';
 import { BackButton, LoadError } from './Feedback';
 
@@ -10,6 +10,13 @@ interface MatchLeaderboardProps {
   onNewSearch: () => void;
   targetCompany: string;
   searchId: string; // Added searchId to the interface
+}
+
+// Titles from search results often already name the company ("PM at Acme"),
+// so only add "@ Company" when they don't
+function titleWithCompany(lead: LinkedInLead): string {
+  const mentionsCompany = lead.company && lead.job_title?.toLowerCase().includes(lead.company.toLowerCase());
+  return [lead.job_title, mentionsCompany ? null : lead.company].filter(Boolean).join(' @ ');
 }
 
 export function MatchLeaderboard({ onBack, onNewSearch, targetCompany, searchId }: MatchLeaderboardProps) {
@@ -105,7 +112,7 @@ export function MatchLeaderboard({ onBack, onNewSearch, targetCompany, searchId 
                       <div className="flex-1 min-w-0 flex items-start justify-between gap-3 sm:gap-4">
                         <div className="min-w-0">
                           <h3 className="text-white font-semibold text-lg sm:text-xl mb-0.5 break-words">{lead.full_name}</h3>
-                          <p className="text-cyan-400 text-sm font-medium mb-2 break-words">{lead.job_title}{lead.company && ` @ ${lead.company}`}</p>
+                          <p className="text-cyan-400 text-sm font-medium mb-2 break-words">{titleWithCompany(lead)}</p>
                           <a 
                             href={lead.linkedin_url} 
                             target="_blank" 
