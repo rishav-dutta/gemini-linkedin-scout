@@ -47,7 +47,7 @@ export function LandingScreen({ onFindLeads, initialCompany = '', initialRole = 
           >
             <Sparkles className="w-8 h-8 sm:w-12 sm:h-12 text-cyan-400 mr-3 sm:mr-4 shrink-0" />
             <h1 className="text-3xl sm:text-5xl font-bold text-white tracking-tight">
-              Gemini LinkedIn Scout
+              LinkedIn Scout
             </h1>
           </motion.div>
 
