@@ -530,11 +530,36 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        1424,
+        1648,
         0
       ],
       "id": "d801cf66-ec85-4bf4-8d17-63b602a9aaf4",
       "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "update public.linkedin_leads\nset linkedin_url = $1\nwhere search_id = $2\n  and linkedin_url = $3\n  and $1 <> $3\n  and not exists (\n    select 1 from public.linkedin_leads\n    where search_id = $2 and linkedin_url = $1\n  );",
+        "options": {
+          "queryReplacement": "={{ $('Run an Actor and get dataset').item.json.linkedinUrl }},{{ $('Webhook').first().json.body.search_id }},{{ $('Run an Actor and get dataset').item.json.originalQuery?.query }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1456,
+        0
+      ],
+      "id": "0ef54b47-48dc-4732-b136-f0202e86af61",
+      "name": "Use current LinkedIn URL",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "gw1ZfzaClLagb7Jx",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
@@ -597,7 +622,7 @@
       "main": [
         [
           {
-            "node": "Respond to Webhook",
+            "node": "Use current LinkedIn URL",
             "type": "main",
             "index": 0
           }
@@ -609,6 +634,17 @@
         [
           {
             "node": "Search the web and scrape results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Use current LinkedIn URL": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
             "type": "main",
             "index": 0
           }

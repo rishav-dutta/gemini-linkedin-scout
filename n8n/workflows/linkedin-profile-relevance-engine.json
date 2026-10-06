@@ -46,7 +46,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT company, linkedin_url, full_profile_markdown\nFROM linkedin_leads\nWHERE search_id = $1",
+        "query": "SELECT id, full_name, company, linkedin_url, full_profile_markdown\nFROM linkedin_leads\nWHERE search_id = $1",
         "options": {
           "queryReplacement": "={{ $('Webhook').first().json.body.search_id }}"
         }
@@ -69,7 +69,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Analyze the candidate's resume against the LinkedIn profiles provided. \n\n--- CANDIDATE RESUME ---\n{{ $('Edit Fields1').first().json.text }}\n\nLINKEDIN PROFILES:\n{{ $(\"Execute a SQL query\").all().map(item => \"URL: \" + item.json.linkedin_url + \"\\nPROFILE: \" + item.json.full_profile_markdown).join('\\n\\n--- NEXT PROFILE ---\\n\\n') }}\n\nTASK:\n1. Compare the skills and experience in the resume to each LinkedIn profile.\n2. For each profile, provide a 'similarity_score' from 0 to 100 based on how well the candidate's experience matches that profile's current role and skills.\n3. Provide a 'scoring_reasoning' for the score.\n4. You MUST return the output as a clean JSON list of objects.\n5. Return exactly {{ $('Execute a SQL query').all().length }} objects, one per profile above. Copy each linkedin_url exactly from a \"URL:\" line above. Never score the candidate's own LinkedIn profile or any URL found in the resume.",
+        "text": "=Analyze the candidate's resume against the LinkedIn profiles provided. \n\n--- CANDIDATE RESUME ---\n{{ $('Edit Fields1').first().json.text }}\n\nLINKEDIN PROFILES:\n{{ $(\"Execute a SQL query\").all().map(item => \"ID: \" + item.json.id + \"\\nNAME: \" + item.json.full_name + \"\\nPROFILE: \" + item.json.full_profile_markdown).join('\\n\\n--- NEXT PROFILE ---\\n\\n') }}\n\nTASK:\n1. Compare the skills and experience in the resume to each LinkedIn profile.\n2. For each profile, provide a 'similarity_score' from 0 to 100 based on how well the candidate's experience matches that profile's current role and skills.\n3. Provide a 'scoring_reasoning' for the score. Refer to the person by name, never by their ID number.\n4. You MUST return the output as a clean JSON list of objects.\n5. Return exactly {{ $('Execute a SQL query').all().length }} objects, one per profile above. Set each object's 'id' to the number on that profile's \"ID:\" line. Never score the candidate themselves or anyone not listed above.",
         "hasOutputParser": true,
         "options": {
           "systemMessage": "You are a precise Recruitment Scout. Do not make up information. Use only the provided profiles and resume to generate scores.\n\nYou will receive multiple profiles. Please score each one individually.\n\nStrictly output results ONLY for the profiles found in the 'Execute a SQL query' input. If only one profile is provided, return exactly one score.",
@@ -117,7 +117,7 @@
     },
     {
       "parameters": {
-        "jsonSchemaExample": "[\n  {\n    \"linkedin_url\": \"https://www.linkedin.com/in/example-profile\",\n    \"similarity_score\": 85,\n    \"scoring_reasoning\": \"Match based on Product Management experience in logistics.\"\n  }\n]"
+        "jsonSchemaExample": "[\n  {\n    \"id\": 123,\n    \"similarity_score\": 85,\n    \"scoring_reasoning\": \"Match based on Product Management experience in logistics.\"\n  }\n]\n"
       },
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
@@ -162,9 +162,9 @@
           "value": {
             "similarity_score": "={{ $json.output.similarity_score }}",
             "scoring_reasoning": "={{ $json.output.scoring_reasoning }}",
-            "linkedin_url": "={{ $json.output.linkedin_url }}",
+            "linkedin_url": "={{ $('Execute a SQL query').all().find(i => i.json.id === $json.output.id)?.json.linkedin_url }}",
             "resume_name": "={{ $('Edit Fields1').item.json.resume_name }}",
-            "modified_at": "={{ $json.output.linkedin_url ? $now : null }}",
+            "modified_at": "={{ $now }}",
             "search_id": "={{ $('Webhook').first().json.body.search_id }}"
           },
           "matchingColumns": [
@@ -546,7 +546,7 @@
           "conditions": [
             {
               "id": "9389ea6c-5af0-4691-8d83-3a17a14627b5",
-              "leftValue": "={{ $('Execute a SQL query').all().map(i => i.json.linkedin_url).includes($json.output.linkedin_url) }}",
+              "leftValue": "={{ $('Execute a SQL query').all().map(i => i.json.id).includes($json.output.id) }}",
               "rightValue": "",
               "operator": {
                 "type": "boolean",
