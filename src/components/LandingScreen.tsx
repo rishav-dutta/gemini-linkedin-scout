@@ -31,22 +31,22 @@ export function LandingScreen({ onFindLeads, initialCompany = '', initialRole = 
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-900 via-slate-900 to-gray-900 flex items-center justify-center p-6">
+    <div className="min-h-dvh bg-linear-to-br from-gray-900 via-slate-900 to-gray-900 flex items-center justify-center p-4 sm:p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
         className="w-full max-w-2xl"
       >
-        <div className="backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 shadow-2xl p-12">
+        <div className="backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 shadow-2xl p-6 sm:p-12">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="flex items-center justify-center mb-8"
+            className="flex items-center justify-center mb-6 sm:mb-8"
           >
-            <Sparkles className="w-12 h-12 text-cyan-400 mr-4" />
-            <h1 className="text-5xl font-bold text-white tracking-tight">
+            <Sparkles className="w-8 h-8 sm:w-12 sm:h-12 text-cyan-400 mr-3 sm:mr-4 shrink-0" />
+            <h1 className="text-3xl sm:text-5xl font-bold text-white tracking-tight">
               Gemini LinkedIn Scout
             </h1>
           </motion.div>
@@ -55,7 +55,7 @@ export function LandingScreen({ onFindLeads, initialCompany = '', initialRole = 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className="text-gray-300 text-center text-lg mb-12"
+            className="text-gray-300 text-center text-base sm:text-lg mb-8 sm:mb-12"
           >
             Find the right people to connect with using AI intelligence
           </motion.p>
