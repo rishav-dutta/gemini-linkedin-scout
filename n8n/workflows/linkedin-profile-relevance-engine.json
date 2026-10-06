@@ -12,15 +12,15 @@
           "binaryPropertyName": "data"
         }
       },
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2.1,
-      "position": [
-        -208,
-        176
-      ],
       "id": "eeb5f3a8-7c8e-4683-87fd-f6bb2bb73c0b",
       "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
       "alwaysOutputData": true,
+      "position": [
+        -208,
+        192
+      ],
       "credentials": {
         "httpHeaderAuth": {
           "id": "10cBbqeCWTfIer8D",
@@ -34,31 +34,31 @@
         "binaryPropertyName": "=data0",
         "options": {}
       },
+      "id": "0e0abb51-db93-4ecc-b626-5a224a05daf7",
+      "name": "Extract from File",
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1.1,
       "position": [
-        0,
-        176
-      ],
-      "id": "0e0abb51-db93-4ecc-b626-5a224a05daf7",
-      "name": "Extract from File"
+        16,
+        304
+      ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT id, full_name, company, linkedin_url, full_profile_markdown\nFROM linkedin_leads\nWHERE search_id = $1",
+        "query": "SELECT id, full_name, company, linkedin_url, full_profile_markdown\nFROM linkedin_leads\nWHERE search_id = $1\nAND full_profile_markdown IS NOT NULL",
         "options": {
           "queryReplacement": "={{ $('Webhook').first().json.body.search_id }}"
         }
       },
+      "id": "ebce82b4-d135-42b4-b0d6-5e781862a3bd",
+      "name": "Execute a SQL query",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        416,
-        176
+        464,
+        352
       ],
-      "id": "ebce82b4-d135-42b4-b0d6-5e781862a3bd",
-      "name": "Execute a SQL query",
       "credentials": {
         "postgres": {
           "id": "gw1ZfzaClLagb7Jx",
@@ -78,36 +78,36 @@
           }
         }
       },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3.1,
-      "position": [
-        624,
-        176
-      ],
       "id": "88040c10-57a1-4ab3-ba20-3fe4c11c7378",
       "name": "AI Agent",
-      "executeOnce": true,
       "notesInFlow": false,
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "executeOnce": true,
       "retryOnFail": true,
-      "waitBetweenTries": 5000,
-      "maxTries": 3
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "position": [
+        688,
+        352
+      ]
     },
     {
       "parameters": {
         "modelName": "models/gemini-2.5-flash-lite",
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1,
-      "position": [
-        544,
-        384
-      ],
       "id": "c9fc0eb5-1648-4dcf-9cfe-19f0291a80da",
       "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
       "retryOnFail": true,
-      "maxTries": 2,
-      "waitBetweenTries": 5000,
+      "maxTries": 5,
+      "waitBetweenTries": 1000,
+      "position": [
+        696,
+        568
+      ],
       "credentials": {
         "googlePalmApi": {
           "id": "tpQQfEUaMdlgjZKr",
@@ -119,14 +119,14 @@
       "parameters": {
         "jsonSchemaExample": "[\n  {\n    \"id\": 123,\n    \"similarity_score\": 85,\n    \"scoring_reasoning\": \"Match based on Product Management experience in logistics.\"\n  }\n]\n"
       },
+      "id": "ef058e92-11f0-44e0-b89c-4c5370a6f397",
+      "name": "Structured Output Parser",
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        800,
-        384
-      ],
-      "id": "ef058e92-11f0-44e0-b89c-4c5370a6f397",
-      "name": "Structured Output Parser"
+        824,
+        568
+      ]
     },
     {
       "parameters": {
@@ -134,14 +134,14 @@
         "include": "allOtherFields",
         "options": {}
       },
+      "id": "e7835bfc-e3ec-4c7c-a780-8d094363935f",
+      "name": "Split Out1",
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        928,
-        176
-      ],
-      "id": "e7835bfc-e3ec-4c7c-a780-8d094363935f",
-      "name": "Split Out1"
+        1040,
+        352
+      ]
     },
     {
       "parameters": {
@@ -328,14 +328,14 @@
         },
         "options": {}
       },
+      "id": "ee74924b-a7c9-46f9-a112-621df5103913",
+      "name": "Update rows in a table1",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        1296,
-        176
+        1488,
+        352
       ],
-      "id": "ee74924b-a7c9-46f9-a112-621df5103913",
-      "name": "Update rows in a table1",
       "credentials": {
         "postgres": {
           "id": "gw1ZfzaClLagb7Jx",
@@ -351,14 +351,14 @@
         "includeOtherFields": true,
         "options": {}
       },
+      "id": "9526740a-da04-4158-8351-626e75835d54",
+      "name": "Edit Fields1",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        208,
-        176
-      ],
-      "id": "9526740a-da04-4158-8351-626e75835d54",
-      "name": "Edit Fields1"
+        240,
+        304
+      ]
     },
     {
       "parameters": {
@@ -380,14 +380,14 @@
         "inputDataFieldName": "data0",
         "options": {}
       },
+      "id": "ec2a5421-9245-45b3-80bd-9e00556c1693",
+      "name": "HTTP Request",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        0,
+        240,
         0
       ],
-      "id": "ec2a5421-9245-45b3-80bd-9e00556c1693",
-      "name": "HTTP Request",
       "credentials": {
         "httpHeaderAuth": {
           "id": "wREcV4N46W3S3L5Q",
@@ -401,14 +401,14 @@
         "combineBy": "combineByPosition",
         "options": {}
       },
+      "id": "32470218-e011-4d02-866d-d733c83d62f9",
+      "name": "Merge",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        416,
-        0
-      ],
-      "id": "32470218-e011-4d02-866d-d733c83d62f9",
-      "name": "Merge"
+        464,
+        48
+      ]
     },
     {
       "parameters": {
@@ -504,14 +504,14 @@
         },
         "options": {}
       },
+      "id": "43b323b5-1f88-473f-bafb-ec330e84f0ef",
+      "name": "Insert rows in a table",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        624,
-        0
+        752,
+        48
       ],
-      "id": "43b323b5-1f88-473f-bafb-ec330e84f0ef",
-      "name": "Insert rows in a table",
       "credentials": {
         "postgres": {
           "id": "gw1ZfzaClLagb7Jx",
@@ -525,14 +525,14 @@
         "responseBody": "{\"status\": \"success\"}",
         "options": {}
       },
+      "id": "1dda8329-22a8-4156-9893-41704c4e796a",
+      "name": "Respond to Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        1504,
-        176
-      ],
-      "id": "1dda8329-22a8-4156-9893-41704c4e796a",
-      "name": "Respond to Webhook"
+        1712,
+        352
+      ]
     },
     {
       "parameters": {
@@ -559,14 +559,14 @@
         },
         "options": {}
       },
+      "id": "4986a7e0-5575-4168-a733-a854b9f199fe",
+      "name": "Filter",
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.3,
       "position": [
-        1104,
-        176
-      ],
-      "id": "4986a7e0-5575-4168-a733-a854b9f199fe",
-      "name": "Filter"
+        1264,
+        352
+      ]
     }
   ],
   "connections": {
