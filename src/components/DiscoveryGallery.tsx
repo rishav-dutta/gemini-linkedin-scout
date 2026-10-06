@@ -86,14 +86,14 @@ export function DiscoveryGallery({
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-900 via-slate-900 to-gray-900 p-6">
+    <div className="min-h-dvh bg-linear-to-br from-gray-900 via-slate-900 to-gray-900 p-4 sm:p-6">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-7xl mx-auto">
         <div className="mb-6">
           <BackButton label="New search" onClick={onNewSearch} />
         </div>
 
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Contacts at {targetCompany}</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2 break-words">Contacts at {targetCompany}</h1>
           <p className="text-gray-400">Upload your resume to see who matches your profile best.</p>
         </div>
 
@@ -124,7 +124,7 @@ export function DiscoveryGallery({
               const file = e.dataTransfer.files[0];
               if (file && !isScanning) handleFileUpload(file);
             }}
-            className={`block backdrop-blur-xl rounded-2xl border-2 border-dashed p-8 text-center transition-all ${
+            className={`block backdrop-blur-xl rounded-2xl border-2 border-dashed p-6 sm:p-8 text-center transition-all ${
               isDragging ? 'border-cyan-400 bg-cyan-400/10' : 'bg-white/5 border-white/20 hover:border-cyan-400/50'
             } ${isScanning ? 'cursor-wait' : 'cursor-pointer'}`}
           >
@@ -139,7 +139,15 @@ export function DiscoveryGallery({
                 <>
                   <Upload className="w-12 h-12 text-cyan-400" />
                   <p className="text-white font-semibold">
-                    {isDragging ? 'Drop your resume to upload' : 'Click or drag resume here'}
+                    {isDragging ? (
+                      'Drop your resume to upload'
+                    ) : (
+                      <>
+                        {/* Phones and tablets can't drag files, so they get a tap prompt */}
+                        <span className="pointer-coarse:hidden">Click or drag resume here</span>
+                        <span className="hidden pointer-coarse:inline">Tap to choose your resume</span>
+                      </>
+                    )}
                   </p>
                   <p className="text-gray-500 text-sm">PDF, up to 5 MB</p>
                 </>
