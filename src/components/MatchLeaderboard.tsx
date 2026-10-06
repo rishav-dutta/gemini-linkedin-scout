@@ -1,51 +1,27 @@
 import { motion } from 'framer-motion';
 import { ChevronDown, ChevronUp, Linkedin, Trophy, User } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { supabase, LinkedInLead, isScored } from '../lib/supabase';
+import { useState } from 'react';
+import { isScored } from '../lib/supabase';
+import { useLeads } from '../lib/useLeads';
+import { BackButton, LoadError } from './Feedback';
 
 interface MatchLeaderboardProps {
+  onBack: () => void;
+  onNewSearch: () => void;
   targetCompany: string;
   searchId: string; // Added searchId to the interface
 }
 
-export function MatchLeaderboard({ targetCompany, searchId }: MatchLeaderboardProps) {
-  const [leads, setLeads] = useState<LinkedInLead[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function MatchLeaderboard({ onBack, onNewSearch, targetCompany, searchId }: MatchLeaderboardProps) {
+  const { leads: rows, isLoading, loadFailed, reload } = useLeads(searchId, 'similarity_score');
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
-  useEffect(() => {
-    // Ignore a response that arrives after the search changed or the screen closed
-    let cancelled = false;
-
-    const fetchLeads = async () => {
-      setIsLoading(true);
-
-      // The function returns only this search's leads (the table itself is not publicly readable)
-      const { data, error } = await supabase
-        .rpc('get_leads_for_search', { p_search_id: searchId })
-        .order('similarity_score', { ascending: false });
-
-      if (cancelled) return;
-      if (error) {
-        console.error('Error fetching leads:', error);
-      } else {
-        // Scored leads first (already sorted by score), then any Gemini skipped
-        const rows = (data ?? []) as LinkedInLead[];
-        setLeads([...rows.filter(isScored), ...rows.filter((lead) => !isScored(lead))]);
-      }
-      setIsLoading(false);
-    };
-
-    if (searchId) fetchLeads();
-    return () => {
-      cancelled = true;
-    };
-  }, [searchId]);
+  // Scored leads first (already sorted by score), then any Gemini skipped
+  const leads = [...rows.filter(isScored), ...rows.filter((lead) => !isScored(lead))];
 
   const toggleExpanded = (id: number) => {
     setExpandedId(expandedId === id ? null : id);
   };
-
 
   if (isLoading) {
     return (
@@ -62,6 +38,16 @@ export function MatchLeaderboard({ targetCompany, searchId }: MatchLeaderboardPr
         animate={{ opacity: 1, y: 0 }}
         className="max-w-6xl mx-auto"
       >
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+          <BackButton label="Upload another resume" onClick={onBack} />
+          <button
+            onClick={onNewSearch}
+            className="text-gray-400 hover:text-cyan-300 transition-colors text-sm font-medium"
+          >
+            New search
+          </button>
+        </div>
+
         <div className="mb-8 flex items-center gap-4">
           <Trophy className="w-10 h-10 text-yellow-400" />
           <div>
@@ -166,9 +152,11 @@ export function MatchLeaderboard({ targetCompany, searchId }: MatchLeaderboardPr
                 </motion.div>
               );
             })
+          ) : loadFailed ? (
+            <LoadError onRetry={reload} />
           ) : (
             <div className="text-center py-20 bg-white/5 rounded-2xl border border-dashed border-white/10">
-              <p className="text-gray-500">No scored matches found yet. Ensure the resume analysis is complete.</p>
+              <p className="text-gray-500">No matches found for this search.</p>
             </div>
           )}
         </div>
