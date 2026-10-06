@@ -1,6 +1,31 @@
 {
-  "name": "Finding Linkedin Profiles",
+  "name": "Find LinkedIn Profiles",
   "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "find-leads",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        96
+      ],
+      "id": "e2246e73-7e8b-4af4-b6d8-5e9dc0346726",
+      "name": "Webhook",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "10cBbqeCWTfIer8D",
+          "name": "Proxy Secret"
+        }
+      }
+    },
     {
       "parameters": {
         "resource": "MapSearch",
@@ -14,16 +39,30 @@
       "typeVersion": 1,
       "position": [
         224,
-        0
+        96
       ],
       "id": "39e4fbb8-d990-4548-a46e-c43a8d7eb46a",
-      "name": "Search the web and scrape results",
+      "name": "Google Search (Firecrawl)",
       "credentials": {
         "firecrawlApi": {
           "id": "h0FGL581fr0K4KaQ",
           "name": "Firecrawl account"
         }
       }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data.web",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "d3276cf7-14d4-4ca7-b326-b58e4e634cce",
+      "name": "One Item per Result"
     },
     {
       "parameters": {
@@ -42,9 +81,9 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "full_name": "={{ $json.title.split(' - ')[0] }}",
+            "full_name": "={{ $json.title.replace(/\\s+[|-]\\s+LinkedIn\\s*$/i, '').split(/ [-|] /)[0].trim() }}",
             "linkedin_url": "={{ decodeURIComponent($json.url).replace(/\\/\\/[a-z]{2}\\.linkedin\\.com/, \"//www.linkedin.com\").split('?')[0].replace(/\\/$/, \"\").replace(/\\/[a-z]{2}$/, \"\") }}",
-            "job_title": "={{ $json.title.split(' - ')[1] }}",
+            "job_title": "={{ (t => / [-|] /.test(t) ? t.replace(/^.*? [-|] /, '').trim() : '')($json.title.replace(/\\s+[|-]\\s+LinkedIn\\s*$/i, '')) }}",
             "search_description": "={{ $json.description }}",
             "company": "={{ $('Webhook').item.json.body.company_name }}",
             "created_at": "={{ $json ? $now : null }}",
@@ -217,31 +256,17 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        672,
+        896,
         0
       ],
       "id": "e732ef2f-c631-4a99-885a-7b9fa7b735d9",
-      "name": "Insert or update rows in a table",
+      "name": "Save Leads",
       "credentials": {
         "postgres": {
           "id": "gw1ZfzaClLagb7Jx",
           "name": "Postgres account"
         }
       }
-    },
-    {
-      "parameters": {
-        "fieldToSplitOut": "data.web",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitOut",
-      "typeVersion": 1,
-      "position": [
-        448,
-        0
-      ],
-      "id": "d3276cf7-14d4-4ca7-b326-b58e4e634cce",
-      "name": "Split Out"
     },
     {
       "parameters": {
@@ -259,11 +284,26 @@
       "type": "n8n-nodes-base.aggregate",
       "typeVersion": 1,
       "position": [
-        896,
+        1120,
         0
       ],
       "id": "54698a0b-4489-44ac-90c5-e058f5d4f33b",
-      "name": "Aggregate"
+      "name": "Collect Profile URLs"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "{\"status\": \"success\"}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1344,
+        0
+      ],
+      "id": "d801cf66-ec85-4bf4-8d17-63b602a9aaf4",
+      "name": "Reply to Site"
     },
     {
       "parameters": {
@@ -282,11 +322,11 @@
       "type": "@apify/n8n-nodes-apify.apify",
       "typeVersion": 1,
       "position": [
-        1344,
+        1568,
         0
       ],
       "id": "024874f0-1343-49ff-bce2-70339ce29048",
-      "name": "Run an Actor and get dataset",
+      "name": "Scrape Profiles (Apify)",
       "retryOnFail": true,
       "maxTries": 2,
       "waitBetweenTries": 2000,
@@ -483,11 +523,11 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        1568,
+        1792,
         0
       ],
       "id": "0445b1c9-1cfd-46ab-a137-623bc11da299",
-      "name": "Update rows in a table",
+      "name": "Save Profile Details",
       "credentials": {
         "postgres": {
           "id": "gw1ZfzaClLagb7Jx",
@@ -498,60 +538,20 @@
     },
     {
       "parameters": {
-        "httpMethod": "POST",
-        "path": "find-leads",
-        "authentication": "headerAuth",
-        "responseMode": "responseNode",
-        "options": {
-          "allowedOrigins": "*"
-        }
-      },
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2.1,
-      "position": [
-        0,
-        0
-      ],
-      "id": "e2246e73-7e8b-4af4-b6d8-5e9dc0346726",
-      "name": "Webhook",
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "10cBbqeCWTfIer8D",
-          "name": "Proxy Secret"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "respondWith": "text",
-        "responseBody": "{\"status\": \"success\"}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.5,
-      "position": [
-        1120,
-        0
-      ],
-      "id": "d801cf66-ec85-4bf4-8d17-63b602a9aaf4",
-      "name": "Respond to Webhook"
-    },
-    {
-      "parameters": {
         "operation": "executeQuery",
         "query": "update public.linkedin_leads\nset linkedin_url = $1\nwhere search_id = $2\n  and linkedin_url = $3\n  and $1 <> $3\n  and not exists (\n    select 1 from public.linkedin_leads\n    where search_id = $2 and linkedin_url = $1\n  );",
         "options": {
-          "queryReplacement": "={{ $('Run an Actor and get dataset').item.json.linkedinUrl }},{{ $('Webhook').first().json.body.search_id }},{{ $('Run an Actor and get dataset').item.json.originalQuery?.query }}"
+          "queryReplacement": "={{ $('Scrape Profiles (Apify)').item.json.linkedinUrl }},{{ $('Webhook').first().json.body.search_id }},{{ $('Scrape Profiles (Apify)').item.json.originalQuery?.query }}"
         }
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        1792,
+        2016,
         0
       ],
       "id": "0ef54b47-48dc-4732-b136-f0202e86af61",
-      "name": "Use current LinkedIn URL",
+      "name": "Use Current LinkedIn URL",
       "alwaysOutputData": true,
       "credentials": {
         "postgres": {
@@ -560,96 +560,162 @@
         }
       },
       "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f1661ac5-5278-4ab5-8678-5a02e6e4759e",
+              "leftValue": "={{ ($json.data?.web ?? []).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        96
+      ],
+      "id": "9a78d47e-cf31-43f3-b8d3-1111c5867574",
+      "name": "Any Results?"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "{\"status\": \"no_results\"}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        192
+      ],
+      "id": "ed648039-1716-451c-a792-567620a81f67",
+      "name": "Reply No Results"
     }
   ],
   "connections": {
-    "Search the web and scrape results": {
-      "main": [
-        [
-          {
-            "node": "Split Out",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Insert or update rows in a table": {
-      "main": [
-        [
-          {
-            "node": "Aggregate",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Split Out": {
-      "main": [
-        [
-          {
-            "node": "Insert or update rows in a table",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Aggregate": {
-      "main": [
-        [
-          {
-            "node": "Respond to Webhook",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Run an Actor and get dataset": {
-      "main": [
-        [
-          {
-            "node": "Update rows in a table",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Update rows in a table": {
-      "main": [
-        [
-          {
-            "node": "Use current LinkedIn URL",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Webhook": {
       "main": [
         [
           {
-            "node": "Search the web and scrape results",
+            "node": "Google Search (Firecrawl)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Use current LinkedIn URL": {
+    "Google Search (Firecrawl)": {
+      "main": [
+        [
+          {
+            "node": "Any Results?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One Item per Result": {
+      "main": [
+        [
+          {
+            "node": "Save Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Leads": {
+      "main": [
+        [
+          {
+            "node": "Collect Profile URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Profile URLs": {
+      "main": [
+        [
+          {
+            "node": "Reply to Site",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply to Site": {
+      "main": [
+        [
+          {
+            "node": "Scrape Profiles (Apify)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape Profiles (Apify)": {
+      "main": [
+        [
+          {
+            "node": "Save Profile Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Profile Details": {
+      "main": [
+        [
+          {
+            "node": "Use Current LinkedIn URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Use Current LinkedIn URL": {
       "main": [
         []
       ]
     },
-    "Respond to Webhook": {
+    "Any Results?": {
       "main": [
         [
           {
-            "node": "Run an Actor and get dataset",
+            "node": "One Item per Result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply No Results",
             "type": "main",
             "index": 0
           }
