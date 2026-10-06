@@ -1,10 +1,33 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
 import './index.css';
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
+const root = createRoot(document.getElementById('root')!);
+
+// The Supabase client throws as soon as it's created without these, which left a
+// blank page, so check them before loading the app (see .env.example)
+const missingEnv = ['VITE_SUPABASE_URL', 'VITE_SUPABASE_ANON_KEY'].filter(
+  (name) => !import.meta.env[name]
 );
+
+if (missingEnv.length > 0) {
+  root.render(
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-6">
+      <div className="max-w-lg text-center">
+        <h1 className="text-2xl font-bold text-white mb-3">App not configured</h1>
+        <p className="text-gray-400">
+          Missing environment variables: {missingEnv.join(', ')}. Add them to .env.local
+          (development) or the Vercel project settings, then rebuild.
+        </p>
+      </div>
+    </div>
+  );
+} else {
+  import('./App.tsx').then(({ default: App }) => {
+    root.render(
+      <StrictMode>
+        <App />
+      </StrictMode>
+    );
+  });
+}

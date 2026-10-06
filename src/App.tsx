@@ -3,13 +3,12 @@ import { AnimatePresence } from 'framer-motion';
 import { LandingScreen } from './components/LandingScreen';
 import { DiscoveryGallery } from './components/DiscoveryGallery';
 import { MatchLeaderboard } from './components/MatchLeaderboard';
-import { supabase, functionErrorMessage, type LinkedInLead } from './lib/supabase';
+import { supabase, functionErrorMessage } from './lib/supabase';
 
 type Screen = 'landing' | 'gallery' | 'leaderboard';
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('landing');
-  const [leads, setLeads] = useState<LinkedInLead[]>([]);
   const [lastSearchedCompany, setLastSearchedCompany] = useState('');
   
   // 1. Initialize the Search ID state
@@ -24,7 +23,7 @@ function App() {
     try {
       // Goes through the n8n-proxy Edge Function, which validates, rate-limits
       // and forwards to n8n with a secret the browser never sees
-      const { data, error } = await supabase.functions.invoke('n8n-proxy/find-leads', {
+      const { error } = await supabase.functions.invoke('n8n-proxy/find-leads', {
         body: {
           company_name: companyName,
           role: targetRole,
@@ -34,9 +33,7 @@ function App() {
 
       if (error) throw error;
 
-      const leadsArray = Array.isArray(data) ? data : data?.leads || [];
-
-      setLeads(leadsArray);
+      // n8n only replies with a status; the gallery loads the saved leads itself
       setCurrentScreen('gallery');
     } catch (error) {
       console.error('Search failed:', error);
@@ -57,7 +54,6 @@ function App() {
         <DiscoveryGallery 
           key="gallery" 
           onResumeUploaded={handleResumeUploaded} 
-          leads={leads}
           targetCompany={lastSearchedCompany} 
           searchId={currentSearchId} // 3. Pass to Gallery
         />
