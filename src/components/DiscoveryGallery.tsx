@@ -86,7 +86,7 @@ export function DiscoveryGallery({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900 p-6">
+    <div className="min-h-screen bg-linear-to-br from-gray-900 via-slate-900 to-gray-900 p-6">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-7xl mx-auto">
         <div className="mb-6">
           <BackButton label="New search" onClick={onNewSearch} />
@@ -159,7 +159,7 @@ export function DiscoveryGallery({
               leads.map((lead) => (
                 <div key={lead.id} className="backdrop-blur-xl bg-white/5 rounded-2xl border border-white/10 p-6 hover:bg-white/10 transition-colors">
                   <div className="flex items-start gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-slate-800 flex-shrink-0 overflow-hidden border border-white/10">
+                    <div className="w-12 h-12 rounded-full bg-slate-800 shrink-0 overflow-hidden border border-white/10">
                       {lead.profile_image_url ? (
                         <img 
                           src={lead.profile_image_url} 

@@ -25,14 +25,14 @@ export function MatchLeaderboard({ onBack, onNewSearch, targetCompany, searchId 
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-gray-900 via-slate-900 to-gray-900 flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900 p-6">
+    <div className="min-h-screen bg-linear-to-br from-gray-900 via-slate-900 to-gray-900 p-6">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -75,9 +75,9 @@ export function MatchLeaderboard({ onBack, onNewSearch, targetCompany, searchId 
                 >
                   <div className="p-6">
                     <div className="flex items-start gap-4">
-                      <div className="flex items-center gap-4 flex-shrink-0">
+                      <div className="flex items-center gap-4 shrink-0">
                         <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
-                          isTop ? 'bg-gradient-to-br from-green-400 to-emerald-500 text-white' : 'bg-white/10 text-gray-400'
+                          isTop ? 'bg-linear-to-br from-green-400 to-emerald-500 text-white' : 'bg-white/10 text-gray-400'
                         }`}>
                           {scored ? index + 1 : '–'}
                         </div>
