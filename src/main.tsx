@@ -1,6 +1,10 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { inject } from '@vercel/analytics';
 import './index.css';
+
+// Vercel Web Analytics (enabled in the Vercel project): page views, no cookies
+inject();
 
 const root = createRoot(document.getElementById('root')!);
 
