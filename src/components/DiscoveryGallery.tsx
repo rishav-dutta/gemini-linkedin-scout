@@ -5,55 +5,49 @@ import { supabase, LinkedInLead, functionErrorMessage } from '../lib/supabase';
 
 interface DiscoveryGalleryProps {
   onResumeUploaded: () => void;
-  leads?: LinkedInLead[];
   targetCompany: string;
   searchId: string; // Added searchId to the interface
 }
 
 export function DiscoveryGallery({ 
   onResumeUploaded, 
-  leads: initialLeads, 
   targetCompany,
   searchId 
 }: DiscoveryGalleryProps) {
-  const [leads, setLeads] = useState<LinkedInLead[]>(initialLeads || []);
+  const [leads, setLeads] = useState<LinkedInLead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [reloadCount, setReloadCount] = useState(0);
   const [isScanning, setIsScanning] = useState(false);
 
   useEffect(() => {
-    if (searchId) {
-      fetchLeads();
-    }
-  }, [targetCompany, searchId]); // Re-fetch if company or search session changes
+    // Ignore a response that arrives after the search changed or the screen closed
+    let cancelled = false;
 
-  const fetchLeads = async () => {
-    setIsLoading(true);
-    console.log(`Fetching leads for Search ID: ${searchId}`);
+    const fetchLeads = async () => {
+      setIsLoading(true);
+      setLoadFailed(false);
 
-    try {
-      // Step 1: Fetch this search session's leads (the table itself is not publicly readable)
+      // The function returns only this search's leads (the table itself is not publicly readable)
       const { data, error } = await supabase
         .rpc('get_leads_for_search', { p_search_id: searchId })
         .order('created_at', { ascending: false });
 
+      if (cancelled) return;
       if (error) {
         console.error('Database Error:', error.message);
-      } else if (data) {
-        // Step 2: Extra safety filter for the specific company name in JS
-        const searchTerm = targetCompany.toLowerCase().trim(); 
-        const filtered = (data as LinkedInLead[]).filter(lead => 
-          lead.company?.toLowerCase().includes(searchTerm)
-        );
-        
-        console.log(`Found ${filtered.length} leads for search ${searchId}`);
-        setLeads(filtered);
+        setLoadFailed(true);
+      } else {
+        setLeads((data ?? []) as LinkedInLead[]);
       }
-    } catch (err) {
-      console.error('Unexpected Error:', err);
-    } finally {
       setIsLoading(false);
-    }
-  };
+    };
+
+    if (searchId) fetchLeads();
+    return () => {
+      cancelled = true;
+    };
+  }, [searchId, reloadCount]);
 
   const handleFileUpload = async (file: File) => {
     if (file.type !== 'application/pdf') {
@@ -84,6 +78,8 @@ export function DiscoveryGallery({
       // Check for success signal from your n8n/backend workflow
       if (parsed?.status === 'success' || parsed?.message === 'success') {
         onResumeUploaded();
+      } else {
+        throw new Error(`Unexpected response: ${JSON.stringify(parsed)}`);
       }
     } catch (error) {
       console.error('Error during resume processing:', error);
@@ -106,7 +102,12 @@ export function DiscoveryGallery({
             <input 
               type="file" 
               accept=".pdf" 
-              onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])} 
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                // Clear the input so picking the same file again (e.g. after an error) fires onChange
+                e.target.value = '';
+                if (file) handleFileUpload(file);
+              }} 
               className="hidden" 
               id="resume-upload" 
               disabled={isScanning} 
@@ -159,7 +160,19 @@ export function DiscoveryGallery({
               ))
             ) : (
               <div className="col-span-full text-center py-10">
-                <p className="text-gray-500">No leads found for this search. Try a different company.</p>
+                {loadFailed ? (
+                  <>
+                    <p className="text-gray-500 mb-3">Could not load contacts.</p>
+                    <button
+                      onClick={() => setReloadCount((count) => count + 1)}
+                      className="text-cyan-400 hover:text-cyan-300 transition-colors text-sm font-medium"
+                    >
+                      Try again
+                    </button>
+                  </>
+                ) : (
+                  <p className="text-gray-500">No leads found for this search. Try a different company.</p>
+                )}
               </div>
             )}
           </div>

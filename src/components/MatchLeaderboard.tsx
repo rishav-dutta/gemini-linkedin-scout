@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { ChevronDown, ChevronUp, Linkedin, Trophy, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { supabase, LinkedInLead } from '../lib/supabase';
+import { supabase, LinkedInLead, isScored } from '../lib/supabase';
 
 interface MatchLeaderboardProps {
   targetCompany: string;
@@ -14,44 +14,38 @@ export function MatchLeaderboard({ targetCompany, searchId }: MatchLeaderboardPr
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   useEffect(() => {
-    if (searchId) {
-      fetchLeads();
-    }
-  }, [targetCompany, searchId]); // Watch both company and search session
+    // Ignore a response that arrives after the search changed or the screen closed
+    let cancelled = false;
 
-  const fetchLeads = async () => {
-    setIsLoading(true);
-    try {
-      // 1. Fetch only leads tied to the specific search session (the table itself is not publicly readable)
+    const fetchLeads = async () => {
+      setIsLoading(true);
+
+      // The function returns only this search's leads (the table itself is not publicly readable)
       const { data, error } = await supabase
         .rpc('get_leads_for_search', { p_search_id: searchId })
-        .not('similarity_score', 'is', null)
         .order('similarity_score', { ascending: false });
 
-      if (error) throw error;
-
-      if (data) {
-        // 2. Filter the results based on the targetCompany prop locally
-        const searchTerm = targetCompany.toLowerCase().trim();
-        
-        const filteredData = (data as LinkedInLead[]).filter(lead => 
-          lead.company?.toLowerCase().includes(searchTerm)
-        );
-        
-        setLeads(filteredData);
+      if (cancelled) return;
+      if (error) {
+        console.error('Error fetching leads:', error);
+      } else {
+        // Scored leads first (already sorted by score), then any Gemini skipped
+        const rows = (data ?? []) as LinkedInLead[];
+        setLeads([...rows.filter(isScored), ...rows.filter((lead) => !isScored(lead))]);
       }
-    } catch (error) {
-      console.error('Error fetching leads:', error);
-    } finally {
       setIsLoading(false);
-    }
-  };
+    };
+
+    if (searchId) fetchLeads();
+    return () => {
+      cancelled = true;
+    };
+  }, [searchId]);
 
   const toggleExpanded = (id: number) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
-  const isTopMatch = (index: number) => index < 3;
 
   if (isLoading) {
     return (
@@ -79,7 +73,8 @@ export function MatchLeaderboard({ targetCompany, searchId }: MatchLeaderboardPr
         <div className="space-y-4">
           {leads.length > 0 ? (
             leads.map((lead, index) => {
-              const isTop = isTopMatch(index);
+              const scored = isScored(lead);
+              const isTop = scored && index < 3;
               const isExpanded = expandedId === lead.id;
 
               return (
@@ -98,7 +93,7 @@ export function MatchLeaderboard({ targetCompany, searchId }: MatchLeaderboardPr
                         <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
                           isTop ? 'bg-gradient-to-br from-green-400 to-emerald-500 text-white' : 'bg-white/10 text-gray-400'
                         }`}>
-                          {index + 1}
+                          {scored ? index + 1 : '–'}
                         </div>
                         
                         <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border border-white/10">
@@ -119,7 +114,7 @@ export function MatchLeaderboard({ targetCompany, searchId }: MatchLeaderboardPr
                         <div className="flex items-start justify-between gap-4 mb-2">
                           <div>
                             <h3 className="text-white font-semibold text-xl mb-0.5">{lead.full_name}</h3>
-                            <p className="text-cyan-400 text-sm font-medium mb-2">{lead.job_title} @ {lead.company}</p>
+                            <p className="text-cyan-400 text-sm font-medium mb-2">{lead.job_title}{lead.company && ` @ ${lead.company}`}</p>
                             <a 
                               href={lead.linkedin_url} 
                               target="_blank" 
@@ -131,10 +126,16 @@ export function MatchLeaderboard({ targetCompany, searchId }: MatchLeaderboardPr
                             </a>
                           </div>
                           <div className="text-right">
-                            <div className={`text-3xl font-bold ${isTop ? 'text-green-400' : 'text-cyan-400'}`}>
-                              {lead.similarity_score}%
-                            </div>
-                            <div className="text-gray-400 text-sm">Compatibility</div>
+                            {scored ? (
+                              <>
+                                <div className={`text-3xl font-bold ${isTop ? 'text-green-400' : 'text-cyan-400'}`}>
+                                  {lead.similarity_score}%
+                                </div>
+                                <div className="text-gray-400 text-sm">Compatibility</div>
+                              </>
+                            ) : (
+                              <div className="text-gray-500 text-sm pt-2">Not scored</div>
+                            )}
                           </div>
                         </div>
                         <p className="text-gray-300 text-sm leading-relaxed mb-4">{lead.search_description}</p>

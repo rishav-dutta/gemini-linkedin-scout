@@ -28,3 +28,8 @@ export interface LinkedInLead {
   scoring_reasoning: string | null;
   created_at: string;
 }
+// n8n saves every new lead with similarity_score 0, and 0 is also a real score,
+// so a lead counts as scored once Gemini has written its reasoning.
+export function isScored(lead: LinkedInLead): boolean {
+  return lead.scoring_reasoning !== null;
+}
