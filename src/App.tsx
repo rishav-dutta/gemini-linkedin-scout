@@ -10,6 +10,7 @@ type Screen = 'landing' | 'gallery' | 'leaderboard';
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('landing');
   const [lastSearchedCompany, setLastSearchedCompany] = useState('');
+  const [lastSearchedRole, setLastSearchedRole] = useState('');
   
   // 1. Initialize the Search ID state
   const [currentSearchId, setCurrentSearchId] = useState<string>('');
@@ -19,6 +20,7 @@ function App() {
     const newSearchId = crypto.randomUUID();
     setCurrentSearchId(newSearchId);
     setLastSearchedCompany(companyName);
+    setLastSearchedRole(targetRole);
     
     try {
       // Goes through the n8n-proxy Edge Function, which validates, rate-limits
@@ -37,7 +39,8 @@ function App() {
       setCurrentScreen('gallery');
     } catch (error) {
       console.error('Search failed:', error);
-      alert(await functionErrorMessage(error, 'Search failed. Please try again.'));
+      // The landing screen shows this message under the form
+      throw new Error(await functionErrorMessage(error, 'Search failed. Please try again.'));
     }
   };
 
@@ -45,15 +48,29 @@ function App() {
     setCurrentScreen('leaderboard');
   };
 
+  const handleNewSearch = () => {
+    setCurrentScreen('landing');
+  };
+
+  const handleBackToContacts = () => {
+    setCurrentScreen('gallery');
+  };
+
   return (
     <AnimatePresence mode="wait">
       {currentScreen === 'landing' && (
-        <LandingScreen key="landing" onFindLeads={handleFindLeads} />
+        <LandingScreen
+          key="landing"
+          onFindLeads={handleFindLeads}
+          initialCompany={lastSearchedCompany}
+          initialRole={lastSearchedRole}
+        />
       )}
       {currentScreen === 'gallery' && (
         <DiscoveryGallery 
           key="gallery" 
           onResumeUploaded={handleResumeUploaded} 
+          onNewSearch={handleNewSearch}
           targetCompany={lastSearchedCompany} 
           searchId={currentSearchId} // 3. Pass to Gallery
         />
@@ -61,6 +78,8 @@ function App() {
       {currentScreen === 'leaderboard' && (
         <MatchLeaderboard 
           key="leaderboard" 
+          onBack={handleBackToContacts}
+          onNewSearch={handleNewSearch}
           targetCompany={lastSearchedCompany} 
           searchId={currentSearchId} // 4. Pass to Leaderboard
         />

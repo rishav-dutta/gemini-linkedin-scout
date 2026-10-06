@@ -1,22 +1,32 @@
 import { motion } from 'framer-motion';
 import { Search, Sparkles } from 'lucide-react';
 import { useState } from 'react';
+import { ErrorBanner } from './Feedback';
 
 interface LandingScreenProps {
   onFindLeads: (companyName: string, targetRole: string) => Promise<void>;
+  // Prefilled from the previous search when coming back via "New search"
+  initialCompany?: string;
+  initialRole?: string;
 }
 
-export function LandingScreen({ onFindLeads }: LandingScreenProps) {
-  const [companyName, setCompanyName] = useState('');
-  const [targetRole, setTargetRole] = useState('');
+export function LandingScreen({ onFindLeads, initialCompany = '', initialRole = '' }: LandingScreenProps) {
+  const [companyName, setCompanyName] = useState(initialCompany);
+  const [targetRole, setTargetRole] = useState(initialRole);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!companyName.trim() || !targetRole.trim()) return;
 
+    setError(null);
     setIsLoading(true);
-    await onFindLeads(companyName, targetRole);
+    try {
+      await onFindLeads(companyName, targetRole);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Search failed. Please try again.');
+    }
     setIsLoading(false);
   };
 
@@ -107,6 +117,8 @@ export function LandingScreen({ onFindLeads }: LandingScreenProps) {
                 </>
               )}
             </motion.button>
+
+            {error && <ErrorBanner message={error} />}
           </form>
         </div>
 
