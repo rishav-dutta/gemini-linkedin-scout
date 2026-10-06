@@ -13,7 +13,7 @@
       "type": "@mendable/n8n-nodes-firecrawl.firecrawl",
       "typeVersion": 1,
       "position": [
-        192,
+        224,
         0
       ],
       "id": "39e4fbb8-d990-4548-a46e-c43a8d7eb46a",
@@ -217,7 +217,7 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        608,
+        672,
         0
       ],
       "id": "e732ef2f-c631-4a99-885a-7b9fa7b735d9",
@@ -237,7 +237,7 @@
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        400,
+        448,
         0
       ],
       "id": "d3276cf7-14d4-4ca7-b326-b58e4e634cce",
@@ -259,7 +259,7 @@
       "type": "n8n-nodes-base.aggregate",
       "typeVersion": 1,
       "position": [
-        816,
+        896,
         0
       ],
       "id": "54698a0b-4489-44ac-90c5-e058f5d4f33b",
@@ -282,7 +282,7 @@
       "type": "@apify/n8n-nodes-apify.apify",
       "typeVersion": 1,
       "position": [
-        1024,
+        1344,
         0
       ],
       "id": "024874f0-1343-49ff-bce2-70339ce29048",
@@ -483,7 +483,7 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        1232,
+        1568,
         0
       ],
       "id": "0445b1c9-1cfd-46ab-a137-623bc11da299",
@@ -530,7 +530,7 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        1648,
+        1120,
         0
       ],
       "id": "d801cf66-ec85-4bf4-8d17-63b602a9aaf4",
@@ -547,7 +547,7 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        1456,
+        1792,
         0
       ],
       "id": "0ef54b47-48dc-4732-b136-f0202e86af61",
@@ -600,7 +600,7 @@
       "main": [
         [
           {
-            "node": "Run an Actor and get dataset",
+            "node": "Respond to Webhook",
             "type": "main",
             "index": 0
           }
@@ -642,9 +642,14 @@
     },
     "Use current LinkedIn URL": {
       "main": [
+        []
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
         [
           {
-            "node": "Respond to Webhook",
+            "node": "Run an Actor and get dataset",
             "type": "main",
             "index": 0
           }
