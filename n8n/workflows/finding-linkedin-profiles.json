@@ -314,7 +314,7 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "linkedin_url": "={{ $json.linkedinUrl }}",
+            "linkedin_url": "={{ $json.originalQuery?.query || $json.linkedinUrl }}",
             "profile_image_url": "={{ $json.photo }}",
             "full_profile_markdown": "={{ $json.about || \"No summary provided.\" }}  Professional Experience: {{ $json.experience.map(job =>    `- ${job.position} at ${job.companyName} (${job.duration})\\n  Description: ${job.description || 'No description provided'}` ).join('\\n\\n') }}",
             "search_id": "={{ $('Webhook').first().json.body.search_id }}"
@@ -493,7 +493,8 @@
           "id": "gw1ZfzaClLagb7Jx",
           "name": "Postgres account"
         }
-      }
+      },
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
