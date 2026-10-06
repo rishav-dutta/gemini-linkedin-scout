@@ -31,7 +31,7 @@ export function LandingScreen({ onFindLeads, initialCompany = '', initialRole = 
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-linear-to-br from-gray-900 via-slate-900 to-gray-900 flex items-center justify-center p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -74,7 +74,7 @@ export function LandingScreen({ onFindLeads, initialCompany = '', initialRole = 
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
                 placeholder="e.g., Google, Meta, Stripe"
-                className="w-full px-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-transparent backdrop-blur-sm transition-all"
+                className="w-full px-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-cyan-400/50 focus:border-transparent backdrop-blur-xs transition-all"
                 required
               />
             </motion.div>
@@ -92,7 +92,7 @@ export function LandingScreen({ onFindLeads, initialCompany = '', initialRole = 
                 value={targetRole}
                 onChange={(e) => setTargetRole(e.target.value)}
                 placeholder="e.g., Engineering, Product, Sales"
-                className="w-full px-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-transparent backdrop-blur-sm transition-all"
+                className="w-full px-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-cyan-400/50 focus:border-transparent backdrop-blur-xs transition-all"
                 required
               />
             </motion.div>
@@ -103,7 +103,7 @@ export function LandingScreen({ onFindLeads, initialCompany = '', initialRole = 
               transition={{ delay: 0.7, duration: 0.5 }}
               type="submit"
               disabled={isLoading}
-              className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-semibold flex items-center justify-center gap-3 transition-all shadow-lg hover:shadow-cyan-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-4 px-6 rounded-xl bg-linear-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-semibold flex items-center justify-center gap-3 transition-all shadow-lg hover:shadow-cyan-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>
