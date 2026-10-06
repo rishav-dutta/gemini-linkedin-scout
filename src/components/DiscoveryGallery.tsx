@@ -21,10 +21,15 @@ export function DiscoveryGallery({
   targetCompany,
   searchId 
 }: DiscoveryGalleryProps) {
-  const { leads, isLoading, loadFailed, reload } = useLeads(searchId, 'created_at');
+  // Contacts show as soon as the web search is saved; full profiles (needed for
+  // scoring) arrive a little later, so uploading waits for them
+  const { leads, isLoading, loadFailed, details, reload } = useLeads(searchId, 'created_at', true);
   const [isScanning, setIsScanning] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const canUpload = details === 'ready' && !isScanning;
+  const missingDetails = details === 'ready' ? leads.filter((lead) => lead.enriched === false).length : 0;
 
   // A file dropped outside the upload zone would make the browser open it and lose this search
   useEffect(() => {
@@ -109,24 +114,25 @@ export function DiscoveryGallery({
             }} 
             className="hidden" 
             id="resume-upload" 
-            disabled={isScanning} 
+            disabled={!canUpload} 
           />
           <label
             htmlFor="resume-upload"
             onDragOver={(e) => {
               e.preventDefault();
-              if (!isScanning) setIsDragging(true);
+              if (canUpload) setIsDragging(true);
             }}
             onDragLeave={() => setIsDragging(false)}
             onDrop={(e) => {
               e.preventDefault();
               setIsDragging(false);
               const file = e.dataTransfer.files[0];
-              if (file && !isScanning) handleFileUpload(file);
+              if (file && canUpload) handleFileUpload(file);
             }}
+            aria-disabled={!canUpload}
             className={`block backdrop-blur-xl rounded-2xl border-2 border-dashed p-6 sm:p-8 text-center transition-all ${
-              isDragging ? 'border-cyan-400 bg-cyan-400/10' : 'bg-white/5 border-white/20 hover:border-cyan-400/50'
-            } ${isScanning ? 'cursor-wait' : 'cursor-pointer'}`}
+              isDragging ? 'border-cyan-400 bg-cyan-400/10' : 'bg-white/5 border-white/20'
+            } ${canUpload ? 'cursor-pointer hover:border-cyan-400/50' : isScanning ? 'cursor-wait' : 'cursor-not-allowed'}`}
           >
             {/* pointer-events-none stops child elements from firing dragleave on the zone */}
             <div className="flex flex-col items-center gap-4 pointer-events-none">
@@ -135,6 +141,17 @@ export function DiscoveryGallery({
                   <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
                   <p className="text-cyan-400 animate-pulse">Analyzing matches...</p>
                 </div>
+              ) : details === 'loading' ? (
+                <>
+                  <div className="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
+                  <p className="text-white font-semibold">Getting profile details…</p>
+                  <p className="text-gray-500 text-sm">You can upload your resume in a moment (usually 10–30 seconds)</p>
+                </>
+              ) : details === 'failed' ? (
+                <>
+                  <Upload className="w-12 h-12 text-gray-600" />
+                  <p className="text-gray-400 font-semibold">Matches can't be scored for this search</p>
+                </>
               ) : (
                 <>
                   <Upload className="w-12 h-12 text-cyan-400" />
@@ -154,6 +171,14 @@ export function DiscoveryGallery({
               )}
             </div>
           </label>
+          {details === 'failed' && (
+            <ErrorBanner message="Couldn't load profile details for these contacts. Please try a new search." />
+          )}
+          {missingDetails > 0 && (
+            <p className="text-gray-500 text-sm">
+              Profile details couldn't be loaded for {missingDetails} of {leads.length} people, so they won't be scored.
+            </p>
+          )}
           {uploadError && <ErrorBanner message={uploadError} />}
         </div>
 
