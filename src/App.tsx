@@ -22,10 +22,11 @@ function App() {
     setLastSearchedCompany(companyName);
     setLastSearchedRole(targetRole);
     
+    let status: unknown;
     try {
       // Goes through the n8n-proxy Edge Function, which validates, rate-limits
       // and forwards to n8n with a secret the browser never sees
-      const { error } = await supabase.functions.invoke('n8n-proxy/find-leads', {
+      const { data, error } = await supabase.functions.invoke('n8n-proxy/find-leads', {
         body: {
           company_name: companyName,
           role: targetRole,
@@ -35,13 +36,27 @@ function App() {
 
       if (error) throw error;
 
-      // n8n only replies with a status; the gallery loads the saved leads itself
-      setCurrentScreen('gallery');
+      // n8n replies with a text/plain body, so the JSON may arrive as a string
+      try {
+        status = (typeof data === 'string' ? JSON.parse(data) : data)?.status;
+      } catch {
+        status = undefined;
+      }
     } catch (error) {
       console.error('Search failed:', error);
       // The landing screen shows this message under the form
       throw new Error(await functionErrorMessage(error, 'Search failed. Please try again.'));
     }
+
+    // The web search found nobody (e.g. a misspelled company), so stay on the form
+    if (status === 'no_results') {
+      throw new Error(
+        `No LinkedIn profiles found for "${companyName}" (${targetRole}). Check the spelling or try a broader role.`
+      );
+    }
+
+    // n8n only replies with a status; the gallery loads the saved leads itself
+    setCurrentScreen('gallery');
   };
 
   const handleResumeUploaded = () => {
