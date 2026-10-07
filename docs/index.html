@@ -21,6 +21,8 @@
   --rule: #e4e1da;
   --link: #1d4ed8;
   --code-bg: #f1efe9;
+  --panel: #efebe3;
+  --shadow: 0 1px 2px rgba(40,30,10,.06), 0 8px 24px rgba(40,30,10,.10);
   --serif: 'Source Serif 4', Georgia, serif;
   --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
@@ -32,6 +34,8 @@
     --rule: #34332f;
     --link: #8fb0ff;
     --code-bg: #24231f;
+    --panel: #22211e;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
   }
 }
 
@@ -70,14 +74,29 @@ h2 { font-size: 1.5rem; line-height: 1.3; font-weight: 600; margin: 3.25rem 0 0.
 p { margin: 0 0 1.1rem; }
 
 .lede { font-size: 1.3rem; line-height: 1.5; margin-bottom: 1rem; }
-.byline { font-family: var(--sans); font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; }
 .links { font-family: var(--sans); font-size: 0.95rem; display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; margin-bottom: 2.5rem; }
 .links a { font-weight: 500; }
 
+/* Project overview under the title */
+.meta { display: grid; grid-template-columns: repeat(4, auto); justify-content: space-between; gap: 1rem 1.5rem; margin: 2rem 0 2.5rem; padding: 1.1rem 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); font-family: var(--sans); font-size: 0.85rem; line-height: 1.45; }
+.meta dt { color: var(--muted); margin-bottom: 0.2rem; }
+.meta dd { margin: 0; }
+
 figure { margin: 2rem 0; }
-figure img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; }
-figcaption { font-family: var(--sans); font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem; }
-.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+figure img { display: block; width: 100%; height: auto; border-radius: 8px; box-shadow: var(--shadow); }
+figcaption { font-family: var(--sans); font-size: 0.8rem; color: var(--muted); margin-top: 0.75rem; }
+.panel { background: var(--panel); border-radius: 14px; padding: clamp(1rem, 4vw, 2.5rem); }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(0.75rem, 2vw, 1.5rem); }
+.phones { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(0.75rem, 3vw, 2rem); max-width: 720px; margin: 0 auto; }
+.phones img { border-radius: 18px; }
+
+/* Request path diagram */
+.diagram { display: flex; align-items: stretch; gap: 0.5rem; font-family: var(--sans); font-size: 0.85rem; line-height: 1.4; }
+.node { flex: 1; background: var(--bg); border: 1px solid var(--rule); border-radius: 10px; padding: 0.8rem 0.9rem; }
+.node b { display: block; font-weight: 600; margin-bottom: 0.15rem; }
+.node span { color: var(--muted); }
+.arrow { align-self: center; color: var(--muted); }
+.diagram-note { font-family: var(--sans); font-size: 0.85rem; color: var(--muted); margin: 0.9rem 0 0; text-align: center; }
 
 /* Let wide images use more of the screen than the text column */
 .wide { --out: min(140px, max(0px, (100vw - 712px) / 2)); margin-left: calc(-1 * var(--out)); margin-right: calc(-1 * var(--out)); }
@@ -87,10 +106,6 @@ ol, ul { padding-left: 1.4rem; margin: 0 0 1.1rem; }
 li { margin-bottom: 0.4rem; }
 
 code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82em; background: var(--code-bg); padding: 0.1em 0.3em; border-radius: 3px; }
-
-.flow { font-family: var(--sans); font-size: 0.9rem; line-height: 1.5; border-left: 3px solid var(--rule); padding: 0.25rem 0 0.25rem 1rem; margin: 1.5rem 0; }
-.flow div { margin: 0.2rem 0; }
-.flow span { color: var(--muted); }
 
 table { width: 100%; border-collapse: collapse; font-family: var(--sans); font-size: 0.9rem; margin: 1rem 0 1.5rem; }
 th, td { text-align: left; padding: 0.55rem 0.75rem 0.55rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
@@ -110,6 +125,12 @@ footer a { color: var(--muted); }
   h2 { font-size: 1.35rem; }
   .lede { font-size: 1.15rem; }
   .pair { grid-template-columns: 1fr; }
+  .meta { grid-template-columns: 1fr 1fr; }
+  /* Swipe through the phone screenshots instead of shrinking them */
+  .phones { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 calc(-1 * clamp(1rem, 4vw, 2.5rem)); padding: 0 clamp(1rem, 4vw, 2.5rem) 0.5rem; }
+  .phones img { flex: 0 0 44%; min-width: 0; scroll-snap-align: start; }
+  .diagram { flex-direction: column; }
+  .arrow { transform: rotate(90deg); }
   td:first-child { white-space: normal; }
   .num td:first-child { white-space: nowrap; }
 }
@@ -129,13 +150,15 @@ footer a { color: var(--muted); }
 
 <h1>LinkedIn Scout</h1>
 <p class="lede">A tool I built to find who to reach out to at a company, ranked by how well their background matches my resume.</p>
-<p class="byline">Rishav Dutta · Built February 2026 · Updated October 2026</p>
-<p class="links">
-  <a href="https://rishav-linkedin-scout.vercel.app">Try it (no sign-up) →</a>
-  <a href="https://github.com/rishav-dutta/linkedin-scout">Source on GitHub →</a>
-</p>
 
-<figure class="wide">
+<dl class="meta">
+  <div><dt>Role</dt><dd>Solo: product, design<br/>and engineering</dd></div>
+  <div><dt>Timeline</dt><dd>February 2026<br/>to now</dd></div>
+  <div><dt>Built with</dt><dd>React, n8n, Gemini,<br/>Supabase</dd></div>
+  <div><dt>Links</dt><dd><a href="https://rishav-linkedin-scout.vercel.app">Live app</a> (no sign-up)<br/><a href="https://github.com/rishav-dutta/linkedin-scout">Source on GitHub</a></dd></div>
+</dl>
+
+<figure class="wide panel">
   <img src="screenshots/03-ranked.png" width="2880" height="1718" alt="Ranked list of contacts, each with a match score and a short explanation"/>
   <figcaption>Contacts ranked against a resume, with the reason for each score. Sample data.</figcaption>
 </figure>
@@ -151,31 +174,47 @@ footer a { color: var(--muted); }
   <li><strong>Rank them.</strong> Upload your resume as a PDF. Gemini scores each person from 0 to 100 against it and writes a sentence or two on why.</li>
 </ol>
 
-<figure class="pair wide">
+<figure class="pair wide panel">
   <img src="screenshots/01-landing.png" width="2880" height="1718" loading="lazy" alt="Search screen with company and role fields"/>
   <img src="screenshots/02-contacts.png" width="2880" height="1718" loading="lazy" alt="Grid of contacts found at the company"/>
   <figcaption>The search screen and the contacts it finds. Sample data.</figcaption>
 </figure>
 
+<p>It works on phones too.</p>
+
+<figure class="wide panel">
+  <div class="phones">
+    <img src="screenshots/06-phone-search.png" width="780" height="1688" loading="lazy" alt="Search screen on a phone"/>
+    <img src="screenshots/07-phone-contacts.png" width="780" height="1688" loading="lazy" alt="Contacts and resume upload on a phone"/>
+    <img src="screenshots/08-phone-ranked.png" width="780" height="1688" loading="lazy" alt="Ranked matches on a phone"/>
+  </div>
+  <figcaption>Search, contacts and ranked matches on a phone. Sample data.</figcaption>
+</figure>
+
 <h2>How it works</h2>
 <p>There is no custom backend server. The site is a React app on Vercel, and the work happens in two n8n workflows that I self-host. The browser never talks to n8n directly; every request goes through a small Supabase function first.</p>
 
-<div class="flow">
-  <div>Browser <span>(React, Vercel)</span></div>
-  <div>→ Supabase Edge Function <span>checks the input, applies rate limits, adds a secret</span></div>
-  <div>→ n8n <span>(Oracle Cloud free tier)</span></div>
-  <div>→ Firecrawl to search, Apify to fetch profiles, Gemini to score</div>
-  <div>→ results saved to Supabase Postgres, which the site reads back</div>
-</div>
+<figure class="wide panel">
+  <div class="diagram">
+    <div class="node"><b>Browser</b><span>React app on Vercel</span></div>
+    <div class="arrow">→</div>
+    <div class="node"><b>Gatekeeper</b><span>Supabase Edge Function: checks input, rate limits</span></div>
+    <div class="arrow">→</div>
+    <div class="node"><b>Workflows</b><span>n8n, self-hosted on Oracle Cloud</span></div>
+    <div class="arrow">→</div>
+    <div class="node"><b>Services</b><span>Firecrawl to search, Apify for profiles, Gemini to score</span></div>
+  </div>
+  <p class="diagram-note">Results are saved to Supabase Postgres, and the site reads them back from there.</p>
+</figure>
 
 <p><strong>Searching.</strong> n8n runs a web search for public LinkedIn profiles at the company, saves the people it finds and replies to the site straight away. It then fetches each person’s full profile in the background.</p>
 <p><strong>Scoring.</strong> n8n pulls the text out of the resume and sends it to Gemini along with each profile, labelled with its database ID. Gemini returns a score and a reason for each ID, and n8n saves them.</p>
 
-<figure class="wide">
+<figure class="wide panel">
   <img src="screenshots/04-n8n-workflow1.png" width="2720" height="816" loading="lazy" alt="n8n workflow that finds LinkedIn profiles"/>
   <figcaption>The search workflow in n8n.</figcaption>
 </figure>
-<figure class="wide">
+<figure class="wide panel">
   <img src="screenshots/05-n8n-workflow2.png" width="2620" height="1040" loading="lazy" alt="n8n workflow that scores profiles against a resume"/>
   <figcaption>The scoring workflow in n8n.</figcaption>
 </figure>
@@ -219,7 +258,7 @@ footer a { color: var(--muted); }
 </main>
 
 <footer>
-  <p><a href="https://rishav-linkedin-scout.vercel.app">LinkedIn Scout</a> · Built by Rishav Dutta · <a href="https://github.com/rishav-dutta/linkedin-scout/blob/main/LICENSE">MIT license</a></p>
+  <p><a href="https://rishav-linkedin-scout.vercel.app">LinkedIn Scout</a> · Built by Rishav Dutta · Updated October 2026 · <a href="https://github.com/rishav-dutta/linkedin-scout/blob/main/LICENSE">MIT license</a></p>
 </footer>
 
 </body>
