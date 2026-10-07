@@ -67,7 +67,6 @@ main { max-width: 680px; margin: 0 auto; padding: 0 1rem 4rem; }
 
 h1 { font-size: 2.6rem; line-height: 1.15; font-weight: 600; margin: 3.5rem 0 0.75rem; letter-spacing: -0.01em; }
 h2 { font-size: 1.5rem; line-height: 1.3; font-weight: 600; margin: 3.25rem 0 0.75rem; }
-h3 { font-size: 1.1rem; font-weight: 600; margin: 2rem 0 0.25rem; }
 p { margin: 0 0 1.1rem; }
 
 .lede { font-size: 1.3rem; line-height: 1.5; margin-bottom: 1rem; }
@@ -180,30 +179,6 @@ footer a { color: var(--muted); }
   <img src="screenshots/05-n8n-workflow2.png" width="2620" height="1040" loading="lazy" alt="n8n workflow that scores profiles against a resume"/>
   <figcaption>The scoring workflow in n8n.</figcaption>
 </figure>
-
-<h2>What broke, and what I changed</h2>
-<p>The first version worked in a demo. These are the problems that showed up after that, and how I fixed them.</p>
-
-<h3>Anyone could spend my API credits</h3>
-<p>The site called the n8n webhooks straight from the browser, so anyone who opened the developer tools could run paid searches in a loop. The leads table was also publicly readable. Now a Supabase Edge Function sits in front of n8n: it validates input, allows 5 searches and 10 uploads per visitor per hour, and is the only thing holding the key n8n accepts. The browser reads results through one database function that returns a single search’s rows.</p>
-
-<h3>Searches took up to 35 seconds</h3>
-<p>Timing each step showed that fetching full profiles took over 90% of the time. The search itself is quick, so the workflow now replies as soon as it has names and links. Contacts appear in about a second, and the resume upload unlocks once the full profiles arrive.</p>
-
-<h3>Some people silently disappeared</h3>
-<p>When someone had changed their LinkedIn URL, the scraper returned the new address, and my database update looked for the old one. The person stayed on screen with no profile and never got scored. The workflow now matches on the exact URL it sent and then stores the current one.</p>
-
-<h3>Gemini mistyped a URL</h3>
-<p>I originally asked Gemini to copy each person’s LinkedIn URL back with their score. Once it dropped two characters, and that person’s score was lost. Now each profile goes in with its database ID, and only IDs that were sent are accepted.</p>
-
-<h3>Gemini sometimes returns nothing</h3>
-<p>About one request in five came back empty, which failed the whole upload. The scoring step now retries up to five times. I also found that n8n ignores the retry setting on the model itself; only the setting on the agent around it takes effect.</p>
-
-<h3>A typo looked like a crash</h3>
-<p>A misspelled company name returned no results, and the site said “Search failed”. It now says nobody was found and suggests checking the spelling.</p>
-
-<h3>I was paying for a server that sat idle</h3>
-<p>n8n started on a small DigitalOcean server. I moved it to Oracle Cloud’s free tier, gave it a public HTTPS address through Tailscale Funnel and set up monthly backups. The whole project now runs on free plans.</p>
 
 <h2>Numbers</h2>
 <p>As of October 2026, including my own testing:</p>
