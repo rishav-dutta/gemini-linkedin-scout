@@ -3,1135 +3,224 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>LinkedIn Scout — AI Networking Tool</title>
+<title>LinkedIn Scout</title>
+<meta name="description" content="A tool I built to find who to reach out to at a company, ranked by how well their background matches my resume."/>
+<meta property="og:title" content="LinkedIn Scout"/>
+<meta property="og:description" content="Find who to reach out to at a company, ranked by how well their background matches your resume."/>
+<meta property="og:image" content="https://rishav-linkedin-scout.vercel.app/og-image.png"/>
+<meta property="og:url" content="https://rishav-dutta.github.io/linkedin-scout/"/>
+<meta name="twitter:card" content="summary_large_image"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet"/>
 <style>
 :root {
-  --bg:       #080C10;
-  --bg2:      #0D1117;
-  --bg3:      #131920;
-  --border:   #1C2530;
-  --cyan:     #00D4FF;
-  --cyan-dim: #0099CC;
-  --purple:   #7B61FF;
-  --green:    #00E5A0;
-  --text:     #C9D1D9;
-  --text-dim: #6E7B8A;
-  --white:    #F0F6FC;
+  --bg: #fbfaf7;
+  --text: #22211f;
+  --muted: #6b6862;
+  --rule: #e4e1da;
+  --link: #1d4ed8;
+  --code-bg: #f1efe9;
+  --serif: 'Source Serif 4', Georgia, serif;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #171716;
+    --text: #e6e4df;
+    --muted: #9c9890;
+    --rule: #34332f;
+    --link: #8fb0ff;
+    --code-bg: #24231f;
+  }
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html { scroll-behavior: smooth; }
+* { box-sizing: border-box; }
 
 body {
-  font-family: 'DM Sans', sans-serif;
+  margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-size: 16px;
-  line-height: 1.7;
-  overflow-x: hidden;
+  font-family: var(--serif);
+  font-size: 19px;
+  line-height: 1.65;
+  -webkit-text-size-adjust: 100%;
 }
 
-/* ── GRID BACKGROUND ─────────────────────────── */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 48px 48px;
-  opacity: 0.35;
-  pointer-events: none;
-  z-index: 0;
-}
+a { color: var(--link); text-underline-offset: 2px; }
 
-/* ── NAV ─────────────────────────────────────── */
-nav {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 100;
+.top {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 0;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 0 2.5rem;
-  height: 60px;
-  background: rgba(8,12,16,0.85);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
-}
-
-.nav-logo {
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 1rem;
-  color: var(--white);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.nav-logo .dot { color: var(--cyan); }
-
-.nav-links {
-  display: flex;
-  gap: 2rem;
-  list-style: none;
-}
-
-.nav-links a {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.75rem;
-  color: var(--text-dim);
-  text-decoration: none;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  transition: color 0.2s;
-}
-
-.nav-links a:hover { color: var(--cyan); }
-
-.nav-cta {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.75rem;
-  padding: 0.4rem 1rem;
-  border: 1px solid var(--cyan);
-  color: var(--cyan);
-  text-decoration: none;
-  letter-spacing: 0.06em;
-  transition: all 0.2s;
-}
-
-.nav-cta:hover {
-  background: var(--cyan);
-  color: var(--bg);
-}
-
-/* ── SECTIONS ────────────────────────────────── */
-section { position: relative; z-index: 1; }
-
-/* ── HERO ────────────────────────────────────── */
-#hero {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 8rem 2rem 4rem;
-}
-
-.hero-eyebrow {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.72rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--cyan);
-  margin-bottom: 1.5rem;
-  opacity: 0;
-  animation: fadeUp 0.6s 0.1s forwards;
-}
-
-.hero-title {
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: clamp(3rem, 8vw, 6.5rem);
-  line-height: 1.0;
-  color: var(--white);
-  letter-spacing: -0.03em;
-  margin-bottom: 1rem;
-  opacity: 0;
-  animation: fadeUp 0.7s 0.2s forwards;
-}
-
-.hero-title .accent { color: var(--cyan); }
-
-.hero-sub {
-  font-size: 1.15rem;
-  color: var(--text-dim);
-  max-width: 520px;
-  margin: 0 auto 2.5rem;
-  font-weight: 300;
-  opacity: 0;
-  animation: fadeUp 0.7s 0.35s forwards;
-}
-
-.hero-actions {
-  display: flex;
   gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
-  opacity: 0;
-  animation: fadeUp 0.7s 0.5s forwards;
-}
-
-.btn-primary {
-  padding: 0.75rem 1.75rem;
-  background: var(--cyan);
-  color: var(--bg);
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 0.9rem;
-  text-decoration: none;
-  letter-spacing: 0.03em;
-  transition: all 0.2s;
-}
-
-.btn-primary:hover { background: #00b8dc; transform: translateY(-2px); }
-
-.btn-ghost {
-  padding: 0.75rem 1.75rem;
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-family: 'Syne', sans-serif;
-  font-weight: 600;
-  font-size: 0.9rem;
-  text-decoration: none;
-  transition: all 0.2s;
-}
-
-.btn-ghost:hover { border-color: var(--cyan); color: var(--cyan); }
-
-.hero-stats {
-  display: flex;
-  gap: 3rem;
-  margin-top: 4rem;
-  opacity: 0;
-  animation: fadeUp 0.7s 0.65s forwards;
-}
-
-.stat {
-  text-align: center;
-}
-
-.stat-num {
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: 2rem;
-  color: var(--white);
-  display: block;
-}
-
-.stat-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--text-dim);
-}
-
-.stat-delta {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.72rem;
-  color: var(--green);
-}
-
-/* ── FLOW ────────────────────────────────────── */
-#flow {
-  padding: 6rem 2rem;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-.section-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.7rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--cyan);
-  margin-bottom: 1rem;
-}
-
-.section-title {
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: clamp(2rem, 4vw, 3rem);
-  color: var(--white);
-  letter-spacing: -0.02em;
-  margin-bottom: 0.75rem;
-}
-
-.section-desc {
-  color: var(--text-dim);
-  font-weight: 300;
-  max-width: 520px;
-  margin-bottom: 3.5rem;
-}
-
-/* ── VERTICAL STEPS ──────────────────────────── */
-.steps-vertical {
-  display: flex;
-  flex-direction: column;
-  gap: 5rem;
-  margin-top: 3rem;
-}
-
-.step-row {
-  display: grid;
-  grid-template-columns: 1fr 1.6fr;
-  gap: 3rem;
-  align-items: center;
-}
-
-.step-row.reverse {
-  grid-template-columns: 1.6fr 1fr;
-}
-
-.step-row.reverse .step-content { order: 2; }
-.step-row.reverse .step-visual  { order: 1; }
-
-.step-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.step-num {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.7rem;
-  color: var(--cyan);
-  letter-spacing: 0.1em;
-}
-
-.step-title {
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 1.75rem;
-  color: var(--white);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-}
-
-.step-desc {
-  font-size: 0.95rem;
-  color: var(--text-dim);
-  line-height: 1.7;
-  max-width: 380px;
-}
-
-.step-visual {
-  position: relative;
-  border: 1px solid var(--border);
-  background: var(--bg2);
-  overflow: hidden;
-}
-
-.step-visual::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--cyan), var(--purple));
-}
-
-.step-visual img {
-  width: 100%;
-  display: block;
-}
-
-.step-visual .slot-placeholder {
-  aspect-ratio: 16/9;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.slot-icon { font-size: 2rem; opacity: 0.2; }
-
-.slot-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.65rem;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-/* ── ARCH ────────────────────────────────────── */
-#arch {
-  padding: 6rem 2rem;
-  background: var(--bg2);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-}
-
-.arch-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5rem;
-  align-items: start;
-}
-
-.arch-diagram {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  padding: 2rem;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: var(--sans);
   font-size: 0.8rem;
-  line-height: 1.9;
-  color: var(--text-dim);
-  position: relative;
-  white-space: pre;
-  overflow-x: auto;
 }
-/* "Built by" section: stack its two columns on narrow screens */
-@media (max-width: 900px) {
-  #roadmap > div { grid-template-columns: 1fr !important; gap: 2rem !important; }
-}
-/* let the diagram scroll inside its box instead of widening the column */
-.arch-inner > * { min-width: 0; }
-@media (max-width: 480px) {
-  .arch-diagram { font-size: 0.68rem; padding: 1.25rem; }
-}
+.top a { color: var(--muted); text-decoration: none; }
+.top a:hover { color: var(--text); }
+.top nav { display: flex; gap: 1.25rem; }
 
-.arch-diagram .hl { color: var(--cyan); }
-.arch-diagram .hl2 { color: var(--green); }
-.arch-diagram .hl3 { color: var(--purple); }
-.arch-diagram .dim { color: #3A4555; }
+main { max-width: 680px; margin: 0 auto; padding: 0 1rem 4rem; }
 
-.arch-diagram::before {
-  content: 'ARCHITECTURE';
-  position: absolute;
-  top: -10px;
-  left: 1.5rem;
-  font-size: 0.62rem;
-  letter-spacing: 0.2em;
-  color: var(--cyan);
-  background: var(--bg);
-  padding: 0 0.5rem;
-}
+h1 { font-size: 2.6rem; line-height: 1.15; font-weight: 600; margin: 3.5rem 0 0.75rem; letter-spacing: -0.01em; }
+h2 { font-size: 1.5rem; line-height: 1.3; font-weight: 600; margin: 3.25rem 0 0.75rem; }
+p { margin: 0 0 1.1rem; }
 
-.workflows { display: flex; flex-direction: column; gap: 1.5rem; }
+.lede { font-size: 1.3rem; line-height: 1.5; margin-bottom: 1rem; }
+.byline { font-family: var(--sans); font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; }
+.links { font-family: var(--sans); font-size: 0.95rem; display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; margin-bottom: 2.5rem; }
+.links a { font-weight: 500; }
 
-.workflow-card {
-  border: 1px solid var(--border);
-  padding: 1.5rem;
-  background: var(--bg);
-  position: relative;
-}
+figure { margin: 2rem 0; }
+figure img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; }
+figcaption { font-family: var(--sans); font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
-.workflow-card::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 3px;
-  background: var(--cyan);
-}
+/* Let wide images use more of the screen than the text column */
+.wide { --out: min(140px, max(0px, (100vw - 712px) / 2)); margin-left: calc(-1 * var(--out)); margin-right: calc(-1 * var(--out)); }
+.pair figcaption { grid-column: 1 / -1; margin-top: 0; }
 
-.wf-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: var(--cyan);
-  margin-bottom: 0.5rem;
-}
+ol, ul { padding-left: 1.4rem; margin: 0 0 1.1rem; }
+li { margin-bottom: 0.4rem; }
 
-.wf-title {
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 1rem;
-  color: var(--white);
-  margin-bottom: 0.75rem;
-}
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82em; background: var(--code-bg); padding: 0.1em 0.3em; border-radius: 3px; }
 
-.wf-steps {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-}
+.flow { font-family: var(--sans); font-size: 0.9rem; line-height: 1.5; border-left: 3px solid var(--rule); padding: 0.25rem 0 0.25rem 1rem; margin: 1.5rem 0; }
+.flow div { margin: 0.2rem 0; }
+.flow span { color: var(--muted); }
 
-.wf-step {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.65rem;
-  padding: 0.2rem 0.5rem;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  color: var(--text-dim);
-  white-space: nowrap;
-}
+table { width: 100%; border-collapse: collapse; font-family: var(--sans); font-size: 0.9rem; margin: 1rem 0 1.5rem; }
+th, td { text-align: left; padding: 0.55rem 0.75rem 0.55rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-weight: 600; }
+td:first-child { white-space: nowrap; }
+.num td:first-child { font-variant-numeric: tabular-nums; font-weight: 600; }
 
-.wf-arrow {
-  font-size: 0.6rem;
-  color: var(--border);
-  align-self: center;
-}
+hr { border: none; border-top: 1px solid var(--rule); margin: 3rem 0; }
 
-/* ── STACK ───────────────────────────────────── */
-#stack {
-  padding: 6rem 2rem;
-  max-width: 1100px;
-  margin: 0 auto;
-}
+footer { max-width: 680px; margin: 0 auto; padding: 0 1rem 3rem; font-family: var(--sans); font-size: 0.8rem; color: var(--muted); }
+footer p { margin: 0; padding-top: 1.5rem; border-top: 1px solid var(--rule); }
+footer a { color: var(--muted); }
 
-.stack-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1px;
-  background: var(--border);
-  margin-top: 3rem;
-}
-
-.stack-card {
-  background: var(--bg2);
-  padding: 1.75rem 1.5rem;
-  transition: background 0.2s;
-}
-
-.stack-card:hover { background: var(--bg3); }
-
-.stack-layer {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.62rem;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: var(--text-dim);
-  margin-bottom: 0.5rem;
-}
-
-.stack-tech {
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 1rem;
-  color: var(--white);
-  margin-bottom: 0.35rem;
-}
-
-.stack-detail {
-  font-size: 0.8rem;
-  color: var(--text-dim);
-  line-height: 1.5;
-}
-
-/* ── DECISIONS ───────────────────────────────── */
-#decisions {
-  padding: 6rem 2rem;
-  background: var(--bg2);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-}
-
-.decisions-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-.decisions-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1px;
-  background: var(--border);
-  margin-top: 3rem;
-}
-
-.decision-card {
-  background: var(--bg);
-  padding: 2rem;
-}
-
-.decision-q {
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 1rem;
-  color: var(--white);
-  margin-bottom: 0.75rem;
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-}
-
-.decision-q::before {
-  content: 'Q';
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.65rem;
-  color: var(--cyan);
-  background: rgba(0,212,255,0.08);
-  border: 1px solid rgba(0,212,255,0.2);
-  padding: 0.15rem 0.4rem;
-  flex-shrink: 0;
-  margin-top: 0.15rem;
-}
-
-.decision-a {
-  font-size: 0.9rem;
-  color: var(--text-dim);
-  line-height: 1.7;
-  padding-left: 1.75rem;
-}
-
-/* ── METRICS ─────────────────────────────────── */
-#metrics {
-  padding: 6rem 2rem;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  background: var(--border);
-  margin-top: 3rem;
-}
-
-.metric-card {
-  background: var(--bg2);
-  padding: 2rem 1.75rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.metric-card::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, var(--cyan), transparent);
-}
-
-.metric-val {
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: 2.75rem;
-  color: var(--white);
-  line-height: 1;
-  margin-bottom: 0.25rem;
-}
-
-.metric-delta {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.72rem;
-  color: var(--green);
-  margin-bottom: 0.75rem;
-}
-
-.metric-label {
-  font-size: 0.85rem;
-  color: var(--text-dim);
-}
-
-/* ── ROADMAP ─────────────────────────────────── */
-#roadmap {
-  padding: 6rem 2rem;
-  background: var(--bg2);
-  border-top: 1px solid var(--border);
-}
-
-.roadmap-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-.roadmap-list {
-  margin-top: 3rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  background: var(--border);
-}
-
-.roadmap-item {
-  background: var(--bg);
-  padding: 1.25rem 1.75rem;
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  transition: background 0.2s;
-}
-
-.roadmap-item:hover { background: var(--bg3); }
-
-.ri-status {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  border: 1.5px solid var(--text-dim);
-  flex-shrink: 0;
-}
-
-.ri-text {
-  font-size: 0.95rem;
-  color: var(--text-dim);
-}
-
-.ri-tag {
-  margin-left: auto;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 0.2rem 0.6rem;
-  border: 1px solid var(--border);
-  color: var(--text-dim);
-}
-
-/* ── FOOTER CTA ──────────────────────────────── */
-#cta {
-  padding: 8rem 2rem;
-  text-align: center;
-  position: relative;
-}
-
-#cta::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 50%; transform: translateX(-50%);
-  width: 1px;
-  height: 4rem;
-  background: linear-gradient(to bottom, var(--border), transparent);
-}
-
-.cta-title {
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  color: var(--white);
-  letter-spacing: -0.02em;
-  margin-bottom: 1rem;
-}
-
-.cta-sub {
-  color: var(--text-dim);
-  font-weight: 300;
-  margin-bottom: 2.5rem;
-}
-
-footer {
-  border-top: 1px solid var(--border);
-  padding: 1.5rem 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: relative;
-  z-index: 1;
-}
-
-.footer-left {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.72rem;
-  color: var(--text-dim);
-}
-
-.footer-right {
-  display: flex;
-  gap: 1.5rem;
-}
-
-.footer-right a {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.72rem;
-  color: var(--text-dim);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.footer-right a:hover { color: var(--cyan); }
-
-/* ── ANIMATIONS ──────────────────────────────── */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.reveal {
-  opacity: 0;
-  transform: translateY(32px);
-  transition: opacity 0.6s, transform 0.6s;
-}
-
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ── RESPONSIVE ──────────────────────────────── */
-@media (max-width: 900px) {
-  .step-row, .step-row.reverse { grid-template-columns: 1fr; }
-  .step-row.reverse .step-content { order: 1; }
-  .step-row.reverse .step-visual  { order: 2; }
-  .stack-grid { grid-template-columns: 1fr 1fr; }
-  .arch-inner, .decisions-grid, .metrics-grid { grid-template-columns: 1fr; }
-  .hero-stats { gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
-  nav { padding: 0 1.25rem; }
-  .nav-links { display: none; }
+@media (max-width: 600px) {
+  body { font-size: 17.5px; }
+  h1 { font-size: 2.1rem; margin-top: 2.5rem; }
+  h2 { font-size: 1.35rem; }
+  .lede { font-size: 1.15rem; }
+  .pair { grid-template-columns: 1fr; }
+  td:first-child { white-space: normal; }
+  .num td:first-child { white-space: nowrap; }
 }
 </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav>
-  <div class="nav-logo">✦ <span>LinkedIn<span class="dot">Scout</span></span></div>
-  <ul class="nav-links">
-    <li><a href="#flow">How It Works</a></li>
-    <li><a href="#arch">Architecture</a></li>
-    <li><a href="#stack">Stack</a></li>
-    <li><a href="#decisions">Decisions</a></li>
-    <li><a href="#metrics">Metrics</a></li>
-  </ul>
-  <a href="https://rishav-linkedin-scout.vercel.app" target="_blank" class="nav-cta">Open App ↗</a>
-</nav>
+<header class="top">
+  <a href="https://linkedin.com/in/duttarishav">Rishav Dutta</a>
+  <nav>
+    <a href="https://rishav-linkedin-scout.vercel.app">App</a>
+    <a href="https://github.com/rishav-dutta/linkedin-scout">GitHub</a>
+  </nav>
+</header>
 
-<!-- HERO -->
-<section id="hero">
-  <div class="hero-eyebrow">AI Networking Tool · Solo 0→1 Build</div>
-  <h1 class="hero-title">Find the right<br/><span class="accent">people.</span></h1>
-  <p class="hero-sub">Enter a company + role. Get a ranked list of LinkedIn contacts scored against your resume — with AI reasoning for every match.</p>
-  <div class="hero-actions">
-    <a href="https://rishav-linkedin-scout.vercel.app" target="_blank" class="btn-primary">Try the App ↗</a>
-    <a href="https://github.com/rishav-dutta/linkedin-scout" target="_blank" class="btn-ghost">View on GitHub</a>
-  </div>
-  <div class="hero-stats">
-    <div class="stat">
-      <span class="stat-num">~1s</span>
-      <span class="stat-label">To first results</span>
-      <span class="stat-delta">down from 7–35s</span>
-    </div>
-    <div class="stat">
-      <span class="stat-num">94</span>
-      <span class="stat-label">Searches run</span>
-      <span class="stat-delta">since Feb 2026</span>
-    </div>
-    <div class="stat">
-      <span class="stat-num">$0</span>
-      <span class="stat-label">Monthly hosting</span>
-      <span class="stat-delta">free tiers only</span>
-    </div>
-    <div class="stat">
-      <span class="stat-num">120+</span>
-      <span class="stat-label">Commits</span>
-      <span class="stat-delta">main branch</span>
-    </div>
-  </div>
-</section>
+<main>
 
-<!-- FLOW -->
-<section id="flow">
-  <div class="section-label">Product Flow</div>
-  <h2 class="section-title reveal">Three steps.<br/>One ranked list.</h2>
-  <p class="section-desc reveal">Built for job seekers who want to network smarter — no manual searching, no guessing who to reach out to.</p>
+<h1>LinkedIn Scout</h1>
+<p class="lede">A tool I built to find who to reach out to at a company, ranked by how well their background matches my resume.</p>
+<p class="byline">Rishav Dutta · Built February 2026 · Updated October 2026</p>
+<p class="links">
+  <a href="https://rishav-linkedin-scout.vercel.app">Try it (no sign-up) →</a>
+  <a href="https://github.com/rishav-dutta/linkedin-scout">Source on GitHub →</a>
+</p>
 
-  <div class="steps-vertical">
+<figure class="wide">
+  <img src="screenshots/03-ranked.png" width="2880" height="1718" alt="Ranked list of contacts, each with a match score and a short explanation"/>
+  <figcaption>Contacts ranked against a resume, with the reason for each score. Sample data.</figcaption>
+</figure>
 
-    <div class="step-row reveal">
-      <div class="step-content">
-        <div class="step-num">01 / TARGET</div>
-        <div class="step-title">Enter a company and role</div>
-        <p class="step-desc">Type the company you're targeting and the department or role — e.g. "Airtable" and "Product Manager." Hit Find Contacts and the app kicks off the discovery pipeline.</p>
-      </div>
-      <div class="step-visual">
-        <img src="screenshots/01-landing.png" alt="Landing page — enter company and role" onerror="this.parentElement.innerHTML='<div class=\'slot-placeholder\'><span class=\'slot-icon\'>🖥</span><span class=\'slot-label\'>Landing Page</span></div>'"/>
-      </div>
-    </div>
+<h2>Why I built it</h2>
+<p>During my MBA job search, networking took most of my time. For every company on my list I searched LinkedIn for people in the team I wanted to join, opened profile after profile, and tried to work out whose background was close enough to mine that a message would get a reply. It was slow, and I was mostly guessing.</p>
+<p>I wanted to type in a company and a role and get back a short list of people, in order, with a reason for each one. So I built that.</p>
 
-    <div class="step-row reverse reveal">
-      <div class="step-visual">
-        <img src="screenshots/02-contacts.png" alt="Contacts grid (sample data)" onerror="this.parentElement.innerHTML='<div class=\'slot-placeholder\'><span class=\'slot-icon\'>👥</span><span class=\'slot-label\'>Contacts Grid</span></div>'"/>
-      </div>
-      <div class="step-content">
-        <div class="step-num">02 / DISCOVER</div>
-        <div class="step-title">See who works there</div>
-        <p class="step-desc">Relevant LinkedIn profiles at that company appear in about a second; full profiles and photos load in the background. Drop in your resume (PDF) to trigger the AI scoring engine.</p>
-      </div>
-    </div>
+<h2>What it does</h2>
+<ol>
+  <li><strong>Search.</strong> Enter a company and a role, for example “Airtable” and “Product Manager”.</li>
+  <li><strong>See who works there.</strong> Matching LinkedIn profiles show up in about a second. Photos and full profiles fill in over the next few seconds.</li>
+  <li><strong>Rank them.</strong> Upload your resume as a PDF. Gemini scores each person from 0 to 100 against it and writes a sentence or two on why.</li>
+</ol>
 
-    <div class="step-row reveal">
-      <div class="step-content">
-        <div class="step-num">03 / RANK</div>
-        <div class="step-title">Get scored matches with AI reasoning</div>
-        <p class="step-desc">Gemini scores every contact against your resume and returns a ranked list with compatibility percentages and an AI Analysis block explaining exactly why each person is a strong match for your background.</p>
-      </div>
-      <div class="step-visual">
-        <img src="screenshots/03-ranked.png" alt="Ranked results with AI scores (sample data)" onerror="this.parentElement.innerHTML='<div class=\'slot-placeholder\'><span class=\'slot-icon\'>🏆</span><span class=\'slot-label\'>Ranked Results</span></div>'"/>
-      </div>
-    </div>
+<figure class="pair wide">
+  <img src="screenshots/01-landing.png" width="2880" height="1718" loading="lazy" alt="Search screen with company and role fields"/>
+  <img src="screenshots/02-contacts.png" width="2880" height="1718" loading="lazy" alt="Grid of contacts found at the company"/>
+  <figcaption>The search screen and the contacts it finds. Sample data.</figcaption>
+</figure>
 
-  </div>
-</section>
+<h2>How it works</h2>
+<p>There is no custom backend server. The site is a React app on Vercel, and the work happens in two n8n workflows that I self-host. The browser never talks to n8n directly; every request goes through a small Supabase function first.</p>
 
-<!-- ARCHITECTURE -->
-<section id="arch">
-  <div class="arch-inner">
-    <div>
-      <div class="section-label">Architecture</div>
-      <h2 class="section-title reveal">One gatekeeper.<br/>Zero custom API server.</h2>
-      <p class="section-desc reveal" style="margin-bottom:2rem;">The browser never calls n8n directly. A Supabase Edge Function validates every request, rate-limits it and forwards it with a secret. n8n handles the rest: search, scraping, scoring, and writing results back to Supabase.</p>
+<div class="flow">
+  <div>Browser <span>(React, Vercel)</span></div>
+  <div>→ Supabase Edge Function <span>checks the input, applies rate limits, adds a secret</span></div>
+  <div>→ n8n <span>(Oracle Cloud free tier)</span></div>
+  <div>→ Firecrawl to search, Apify to fetch profiles, Gemini to score</div>
+  <div>→ results saved to Supabase Postgres, which the site reads back</div>
+</div>
 
-      <div class="arch-diagram reveal"><span class="hl">React Frontend</span> (Vercel)
-  │ search / resume      ▲ results via
-  ▼                      │ get_leads_for_search()
-<span class="hl2">Edge Function</span> (Supabase) │
-  │ validate · limit     │
-  ▼ + secret header      │
-<span class="hl2">n8n Workflows</span> (Oracle)   │
-  ├─▶ <span class="dim">Firecrawl</span> (search) │
-  ├─▶ <span class="dim">Apify</span> (scrape)     │
-  ├─▶ <span class="hl3">Gemini</span> (scoring)   │
-  ▼                      │
-<span class="hl">Supabase</span> (PostgreSQL) ──┘</div>
-    </div>
+<p><strong>Searching.</strong> n8n runs a web search for public LinkedIn profiles at the company, saves the people it finds and replies to the site straight away. It then fetches each person’s full profile in the background.</p>
+<p><strong>Scoring.</strong> n8n pulls the text out of the resume and sends it to Gemini along with each profile, labelled with its database ID. Gemini returns a score and a reason for each ID, and n8n saves them.</p>
 
-    <div class="workflows reveal">
-      <div class="workflow-card">
-        <div class="wf-label">Workflow 1</div>
-        <div class="wf-title">Find LinkedIn Profiles</div>
-        <div class="wf-steps">
-          <span class="wf-step">Webhook</span><span class="wf-arrow">→</span>
-          <span class="wf-step">Web Search</span><span class="wf-arrow">→</span>
-          <span class="wf-step">Any Results?</span><span class="wf-arrow">→</span>
-          <span class="wf-step">Save Leads</span><span class="wf-arrow">→</span>
-          <span class="wf-step">Reply to Site</span><span class="wf-arrow">→</span>
-          <span class="wf-step">Apify Enrich</span><span class="wf-arrow">→</span>
-          <span class="wf-step">Save Details</span><span class="wf-arrow">→</span>
-          <span class="wf-step">Current URL</span>
-        </div>
-      </div>
-      <div class="workflow-card">
-        <div class="wf-label">Workflow 2</div>
-        <div class="wf-title">Score Resume Matches</div>
-        <div class="wf-steps">
-          <span class="wf-step">Webhook</span><span class="wf-arrow">→</span>
-          <span class="wf-step">Store + Extract PDF</span><span class="wf-arrow">→</span>
-          <span class="wf-step">Load Leads</span><span class="wf-arrow">→</span>
-          <span class="wf-step">Gemini Agent</span><span class="wf-arrow">→</span>
-          <span class="wf-step">Keep Sent IDs</span><span class="wf-arrow">→</span>
-          <span class="wf-step">Save Scores</span><span class="wf-arrow">→</span>
-          <span class="wf-step">Reply</span>
-        </div>
-      </div>
-      <div class="workflow-card" style="--cyan:#00E5A0; border-left-color: var(--green);">
-        <div class="wf-label" style="color:var(--green)">Database</div>
-        <div class="wf-title">Supabase</div>
-        <div class="wf-steps">
-          <span class="wf-step">linkedin_leads</span>
-          <span class="wf-step">user_resumes</span>
-          <span class="wf-step">proxy_requests (rate limits)</span>
-          <span class="wf-step">get_leads_for_search()</span>
-          <span class="wf-step">private resumes bucket</span>
-        </div>
-      </div>
-    </div>
-  </div>
+<figure class="wide">
+  <img src="screenshots/04-n8n-workflow1.png" width="2720" height="816" loading="lazy" alt="n8n workflow that finds LinkedIn profiles"/>
+  <figcaption>The search workflow in n8n.</figcaption>
+</figure>
+<figure class="wide">
+  <img src="screenshots/05-n8n-workflow2.png" width="2620" height="1040" loading="lazy" alt="n8n workflow that scores profiles against a resume"/>
+  <figcaption>The scoring workflow in n8n.</figcaption>
+</figure>
 
-  <!-- Architecture screenshots -->
-  <div style="max-width:1100px; margin:2rem auto 0; display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border);">
-    <div class="step-visual reveal" style="border:none;">
-      <div style="font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--cyan); text-transform:uppercase; letter-spacing:0.12em; padding:1rem 1.25rem 0.5rem; background:var(--bg2);">n8n · Workflow 1 — Find LinkedIn Profiles</div>
-      <img src="screenshots/04-n8n-workflow1.png" alt="n8n canvas: Find LinkedIn Profiles workflow"
-        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"/>
-      <div class="slot-placeholder" style="display:none; background:var(--bg2); aspect-ratio:16/7;">
-        <span class="slot-icon">⚙️</span><span class="slot-label">04-n8n-workflow1.png</span>
-      </div>
-    </div>
-    <div class="step-visual reveal" style="border:none;">
-      <div style="font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--purple); text-transform:uppercase; letter-spacing:0.12em; padding:1rem 1.25rem 0.5rem; background:var(--bg2);">n8n · Workflow 2 — Score Resume Matches</div>
-      <img src="screenshots/05-n8n-workflow2.png" alt="n8n canvas: Score Resume Matches workflow"
-        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"/>
-      <div class="slot-placeholder" style="display:none; background:var(--bg2); aspect-ratio:16/7;">
-        <span class="slot-icon">🤖</span><span class="slot-label">05-n8n-workflow2.png</span>
-      </div>
-    </div>
-  </div>
-</section>
+<h2>Numbers</h2>
+<p>As of October 2026, including my own testing:</p>
+<table class="num">
+  <tr><td>95</td><td>searches, across 65 companies</td></tr>
+  <tr><td>363</td><td>profiles found</td></tr>
+  <tr><td>91</td><td>resumes scored</td></tr>
+  <tr><td>133</td><td>visitors in four weeks (Vercel Analytics, April 12 to May 10, 2026)</td></tr>
+  <tr><td>~1&nbsp;s</td><td>until the first contacts appear, down from 7 to 35 seconds</td></tr>
+  <tr><td>$0</td><td>a month to run</td></tr>
+</table>
 
-<!-- STACK -->
-<section id="stack">
-  <div class="section-label">Tech Stack</div>
-  <h2 class="section-title reveal">Built with the right tools<br/>for a solo build.</h2>
+<h2>What I left out</h2>
+<p>There are no accounts and no saved search history. I left both out so I could ship the whole flow end to end first. Searches cover US profiles and return up to four people each, which keeps scraping costs low.</p>
 
-  <div class="stack-grid reveal">
-    <div class="stack-card">
-      <div class="stack-layer">Frontend</div>
-      <div class="stack-tech">TypeScript + React 18</div>
-      <div class="stack-detail">Vite 8, Tailwind CSS 4, Framer Motion. Works on phones; contacts show before profiles finish loading.</div>
-    </div>
-    <div class="stack-card">
-      <div class="stack-layer">Gateway</div>
-      <div class="stack-tech">Supabase Edge Function</div>
-      <div class="stack-detail">Validates input, rate-limits per visitor and per day, and calls n8n with a secret header.</div>
-    </div>
-    <div class="stack-card">
-      <div class="stack-layer">Workflows</div>
-      <div class="stack-tech">n8n (self-hosted)</div>
-      <div class="stack-detail">Visual workflow orchestration in Docker. No custom API server needed.</div>
-    </div>
-    <div class="stack-card">
-      <div class="stack-layer">AI / LLM</div>
-      <div class="stack-tech">Google Gemini 2.5 Flash-Lite</div>
-      <div class="stack-detail">Structured output via the n8n AI Agent. Scores + reasons per contact, matched by lead ID.</div>
-    </div>
-    <div class="stack-card">
-      <div class="stack-layer">Search + Scraping</div>
-      <div class="stack-tech">Firecrawl + Apify</div>
-      <div class="stack-detail">Firecrawl web search finds profiles; harvestapi/linkedin-profile-scraper fills in full profiles.</div>
-    </div>
-    <div class="stack-card">
-      <div class="stack-layer">Database</div>
-      <div class="stack-tech">Supabase</div>
-      <div class="stack-detail">PostgreSQL and private Storage, versioned SQL migrations. The browser reads through one narrow function.</div>
-    </div>
-    <div class="stack-card">
-      <div class="stack-layer">Server</div>
-      <div class="stack-tech">Oracle Cloud</div>
-      <div class="stack-detail">Always Free Ampere A1, Ubuntu 24.04, public HTTPS via Tailscale Funnel. Monthly backups.</div>
-    </div>
-    <div class="stack-card">
-      <div class="stack-layer">Delivery</div>
-      <div class="stack-tech">Vercel + GitHub Actions</div>
-      <div class="stack-detail">Auto-deploy from main. CI runs lint, type checks and a build on every pull request.</div>
-    </div>
-  </div>
-</section>
+<h2>Stack</h2>
+<table>
+  <tr><td>Frontend</td><td>React 18, TypeScript, Vite, Tailwind CSS, on Vercel</td></tr>
+  <tr><td>Gateway</td><td>Supabase Edge Function (Deno)</td></tr>
+  <tr><td>Workflows</td><td>n8n, self-hosted in Docker on Oracle Cloud</td></tr>
+  <tr><td>AI</td><td>Google Gemini 2.5 Flash-Lite, through n8n’s AI Agent with structured output</td></tr>
+  <tr><td>Search and profiles</td><td>Firecrawl (web search), Apify (LinkedIn profile scraper)</td></tr>
+  <tr><td>Data</td><td>Supabase Postgres and private storage, with versioned migrations</td></tr>
+  <tr><td>Checks</td><td>GitHub Actions: lint, type check and build on every pull request</td></tr>
+</table>
+<p>The code, database migrations and both n8n workflows are in the <a href="https://github.com/rishav-dutta/linkedin-scout">GitHub repo</a>, with steps to run your own copy.</p>
 
-<!-- DECISIONS -->
-<section id="decisions">
-  <div class="decisions-inner">
-    <div class="section-label">Product Decisions</div>
-    <h2 class="section-title reveal">The why behind<br/>every choice.</h2>
+<hr/>
 
-    <div class="decisions-grid reveal">
-      <div class="decision-card">
-        <div class="decision-q">Why n8n over a custom API server?</div>
-        <p class="decision-a">n8n allowed rapid workflow prototyping without maintaining a full backend codebase. Each node is visual and independently debuggable — critical for a solo build where iteration speed matters most.</p>
-      </div>
-      <div class="decision-card">
-        <div class="decision-q">Why put a gatekeeper in front of n8n?</div>
-        <p class="decision-a">The first version called n8n webhooks straight from the browser, so anyone could trigger paid Apify and Gemini runs. A Supabase Edge Function now validates input, rate-limits each visitor and holds the only key to n8n.</p>
-      </div>
-      <div class="decision-card">
-        <div class="decision-q">Why self-host n8n on Oracle’s free tier?</div>
-        <p class="decision-a">No per-execution pricing and no cloud timeouts on long scraping jobs, at $0/month (it moved off a paid DigitalOcean droplet). Tailscale Funnel gives it a stable HTTPS address without buying a domain.</p>
-      </div>
-      <div class="decision-card">
-        <div class="decision-q">Why show contacts before profiles finish loading?</div>
-        <p class="decision-a">Profile scraping is over 90% of a search’s time (7–35 s). The workflow now replies as soon as the search results are saved, so contacts appear in about a second while photos and full profiles fill in.</p>
-      </div>
-      <div class="decision-card">
-        <div class="decision-q">Why score contacts rather than just surface them?</div>
-        <p class="decision-a">Raw scraping results are noisy. Ranking by resume-to-profile alignment makes the outreach list immediately actionable — you know exactly who to prioritise and why, without any manual filtering.</p>
-      </div>
-      <div class="decision-card">
-        <div class="decision-q">Why identify leads by ID when asking Gemini?</div>
-        <p class="decision-a">Gemini occasionally rewrote a LinkedIn URL it was asked to copy back, which silently dropped that person’s score. Sending each profile with its database ID removed the problem; only IDs that were sent are accepted.</p>
-      </div>
-      <div class="decision-card">
-        <div class="decision-q">Why Supabase?</div>
-        <p class="decision-a">Instant PostgreSQL with private storage, versioned migrations and Edge Functions. The browser can’t read the leads table directly — only one function that returns a single search’s rows.</p>
-      </div>
-      <div class="decision-card">
-        <div class="decision-q">What did you cut for MVP?</div>
-        <p class="decision-a">User authentication and saved search history were deliberately deferred to ship a working end-to-end flow first. Both are buildable on the existing Supabase Auth stack when needed.</p>
-      </div>
-    </div>
-  </div>
-</section>
+<h2>About me</h2>
+<p>I’m Rishav Dutta, AI Product Owner at SquadLocker. I have 6+ years of product management experience across mobility, logistics and e-commerce, at Zoomcar, Blackbuck and IUVA Foods, and an MBA from Simon Business School at the University of Rochester (2026). I built LinkedIn Scout on my own, as product manager, designer and developer.</p>
+<p class="links">
+  <a href="https://linkedin.com/in/duttarishav">LinkedIn →</a>
+  <a href="https://github.com/rishav-dutta">GitHub →</a>
+  <a href="https://github.com/rishav-dutta/linkedin-scout/raw/main/linkedin_scout_documentation.pdf">Original write-up, February 2026 (PDF) →</a>
+</p>
 
-<!-- METRICS -->
-<section id="metrics">
-  <div class="section-label">Metrics</div>
-  <h2 class="section-title reveal">Live in production.</h2>
-  <p class="section-desc reveal">Vercel Web Analytics · Apr 12 – May 10, 2026</p>
-
-  <div class="metrics-grid reveal">
-    <div class="metric-card">
-      <div class="metric-val">133</div>
-      <div class="metric-delta">+151% period-over-period</div>
-      <div class="metric-label">Unique Visitors</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-val">184</div>
-      <div class="metric-delta">+171% period-over-period</div>
-      <div class="metric-label">Page Views</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-val">0%</div>
-      <div class="metric-delta">Across all edge requests</div>
-      <div class="metric-label">Error Rate</div>
-    </div>
-  </div>
-
-  <!-- Analytics screenshot -->
-  <div style="max-width:1100px; margin:2rem auto 0;" class="reveal">
-    <div class="step-visual" style="border:1px solid var(--border);">
-      <div style="font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--cyan); text-transform:uppercase; letter-spacing:0.12em; padding:1rem 1.25rem 0.5rem; background:var(--bg2);">Vercel Analytics Dashboard · Apr 12 – May 10, 2026</div>
-      <img src="screenshots/07-analytics.png" alt="Vercel analytics dashboard"
-        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"/>
-      <div class="slot-placeholder" style="display:none; background:var(--bg2); aspect-ratio:21/9;">
-        <span class="slot-icon">📈</span><span class="slot-label">07-analytics.png</span>
-      </div>
-    </div>
-  </div>
-</section>
-<section id="roadmap" style="padding:6rem 2rem; background:var(--bg2); border-top:1px solid var(--border);">
-  <div style="max-width:1100px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center;">
-    <div class="reveal">
-      <div class="section-label">Built by</div>
-      <h2 class="section-title">Rishav Dutta</h2>
-      <p style="color:var(--text-dim); font-weight:300; font-size:1rem; line-height:1.8; margin-bottom:2rem;">MBA candidate at Simon Business School (University of Rochester), graduating May 2026. 5+ years of product management experience across consumer mobility, logistics, and B2B SaaS. Built this solo — as PM, designer, and developer — to solve a real problem I was facing during my own job search.</p>
-      <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-        <a href="https://linkedin.com/in/duttarishav" target="_blank" class="btn-primary">Connect on LinkedIn ↗</a>
-        <a href="https://github.com/rishav-dutta/linkedin-scout/raw/main/linkedin_scout_documentation.pdf" target="_blank" class="btn-ghost">View Documentation ↗</a>
-      </div>
-    </div>
-    <div class="reveal">
-      <div style="display:flex; flex-direction:column; gap:1px; background:var(--border);">
-        <div style="background:var(--bg); padding:1.25rem 1.5rem;">
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--cyan); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.35rem;">Background</div>
-          <div style="font-size:0.9rem; color:var(--text-dim);">Product Management · Consumer Marketplaces · AI Tooling</div>
-        </div>
-        <div style="background:var(--bg); padding:1.25rem 1.5rem;">
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--cyan); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.35rem;">Experience</div>
-          <div style="font-size:0.9rem; color:var(--text-dim);">Zoomcar · Blackbuck · Platter · IUVA Foods</div>
-        </div>
-        <div style="background:var(--bg); padding:1.25rem 1.5rem;">
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--cyan); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.35rem;">Education</div>
-          <div style="font-size:0.9rem; color:var(--text-dim);">MBA · Simon Business School, University of Rochester '26</div>
-        </div>
-        <div style="background:var(--bg); padding:1.25rem 1.5rem;">
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--cyan); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.35rem;">Stack fluency</div>
-          <div style="font-size:0.9rem; color:var(--text-dim);">SQL · Python · React · n8n · Supabase · Figma · Mixpanel</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CTA -->
-<section id="cta">
-  <h2 class="cta-title reveal">Try it yourself.</h2>
-  <p class="cta-sub reveal">No account needed. Enter a company and a role to get started.</p>
-  <div class="reveal">
-    <a href="https://rishav-linkedin-scout.vercel.app" target="_blank" class="btn-primary">Open LinkedIn Scout ↗</a>
-  </div>
-</section>
+</main>
 
 <footer>
-  <div class="footer-left">Built by Rishav Dutta · Simon Business School '26</div>
-  <div class="footer-right">
-    <a href="https://linkedin.com/in/duttarishav" target="_blank">LinkedIn</a>
-    <a href="https://github.com/rishav-dutta/linkedin-scout" target="_blank">GitHub</a>
-    <a href="https://rishav-linkedin-scout.vercel.app" target="_blank">Live App</a>
-  </div>
+  <p><a href="https://rishav-linkedin-scout.vercel.app">LinkedIn Scout</a> · Built by Rishav Dutta · <a href="https://github.com/rishav-dutta/linkedin-scout/blob/main/LICENSE">MIT license</a></p>
 </footer>
-
-<script>
-// Scroll reveal
-const reveals = document.querySelectorAll('.reveal');
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach((e, i) => {
-    if (e.isIntersecting) {
-      setTimeout(() => e.target.classList.add('visible'), i * 80);
-      observer.unobserve(e.target);
-    }
-  });
-}, { threshold: 0.1 });
-reveals.forEach(el => observer.observe(el));
-</script>
 
 </body>
 </html>
