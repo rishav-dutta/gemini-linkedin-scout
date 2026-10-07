@@ -18,8 +18,6 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 const ALLOWED_ORIGINS = [
   "https://rishav-linkedin-scout.vercel.app",
-  // Previous address; now redirects to the one above. Kept so the switch can't break searches.
-  "https://gemini-linkedin-scout.vercel.app",
   "http://localhost:5173",
 ];
 
