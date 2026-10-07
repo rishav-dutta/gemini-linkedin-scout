@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
-import { Linkedin, Upload, User } from 'lucide-react';
+import { FileUp, Linkedin } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase, functionErrorMessage } from '../lib/supabase';
 import { useLeads } from '../lib/useLeads';
-import { BackButton, ErrorBanner, LoadError } from './Feedback';
+import { Avatar, BackButton, ErrorBanner, LoadError, Page, Spinner } from './Feedback';
 
 // Same limit the n8n-proxy Edge Function enforces
 const MAX_RESUME_BYTES = 5 * 1024 * 1024;
@@ -12,6 +12,7 @@ interface DiscoveryGalleryProps {
   onResumeUploaded: () => void;
   onNewSearch: () => void;
   targetCompany: string;
+  targetRole: string;
   searchId: string; // Added searchId to the interface
 }
 
@@ -19,6 +20,7 @@ export function DiscoveryGallery({
   onResumeUploaded, 
   onNewSearch,
   targetCompany,
+  targetRole,
   searchId 
 }: DiscoveryGalleryProps) {
   // Contacts show as soon as the web search is saved; full profiles (needed for
@@ -91,18 +93,22 @@ export function DiscoveryGallery({
   };
 
   return (
-    <div className="min-h-dvh bg-linear-to-br from-gray-900 via-slate-900 to-gray-900 p-4 sm:p-6">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-7xl mx-auto">
-        <div className="mb-6">
+    <Page>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-4xl mx-auto">
+        <div className="mb-8">
           <BackButton label="New search" onClick={onNewSearch} />
         </div>
 
         <div className="mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2 break-words">Contacts at {targetCompany}</h1>
-          <p className="text-gray-400">Upload your resume to see who matches your profile best.</p>
+          <h1 className="text-balance font-serif font-semibold text-3xl sm:text-4xl tracking-tight break-words">People at {targetCompany}</h1>
+          <p className="mt-2 text-muted">
+            {isLoading
+              ? `Searching for ${targetRole}…`
+              : `${leads.length} ${leads.length === 1 ? 'person' : 'people'} found for “${targetRole}”. Upload your resume to rank them.`}
+          </p>
         </div>
 
-        <div className="mb-8 space-y-3">
+        <div className="mb-10 space-y-3">
           <input 
             type="file" 
             accept=".pdf" 
@@ -130,43 +136,46 @@ export function DiscoveryGallery({
               if (file && canUpload) handleFileUpload(file);
             }}
             aria-disabled={!canUpload}
-            className={`block backdrop-blur-xl rounded-2xl border-2 border-dashed p-6 sm:p-8 text-center transition-all ${
-              isDragging ? 'border-cyan-400 bg-cyan-400/10' : 'bg-white/5 border-white/20'
-            } ${canUpload ? 'cursor-pointer hover:border-cyan-400/50' : isScanning ? 'cursor-wait' : 'cursor-not-allowed'}`}
+            className={`block rounded-xl border-2 border-dashed px-6 py-8 text-center transition-colors ${
+              isDragging ? 'border-accent bg-accent-soft' : 'border-rule bg-card'
+            } ${canUpload ? 'cursor-pointer hover:border-accent' : isScanning ? 'cursor-wait' : 'cursor-not-allowed'}`}
           >
             {/* pointer-events-none stops child elements from firing dragleave on the zone */}
-            <div className="flex flex-col items-center gap-4 pointer-events-none">
+            <div className="flex flex-col items-center gap-2 pointer-events-none">
               {isScanning ? (
-                <div className="flex flex-col items-center gap-2">
-                  <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
-                  <p className="text-cyan-400 animate-pulse">Analyzing matches...</p>
-                </div>
+                <>
+                  <Spinner />
+                  <p className="font-medium mt-1">Scoring your matches…</p>
+                  <p className="text-muted text-sm">Usually done in under 20 seconds</p>
+                </>
               ) : details === 'loading' ? (
                 <>
-                  <div className="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
-                  <p className="text-white font-semibold">Getting profile details…</p>
-                  <p className="text-gray-500 text-sm">You can upload your resume in a moment (usually 10–30 seconds)</p>
+                  <Spinner />
+                  <p className="font-medium mt-1">Loading full profiles…</p>
+                  <p className="text-muted text-sm">You can upload your resume in a moment (usually 10–30 seconds)</p>
                 </>
               ) : details === 'failed' ? (
                 <>
-                  <Upload className="w-12 h-12 text-gray-600" />
-                  <p className="text-gray-400 font-semibold">Matches can't be scored for this search</p>
+                  <FileUp className="w-8 h-8 text-muted" />
+                  <p className="font-medium text-muted mt-1">Matches can't be scored for this search</p>
                 </>
               ) : (
                 <>
-                  <Upload className="w-12 h-12 text-cyan-400" />
-                  <p className="text-white font-semibold">
+                  <FileUp className="w-8 h-8 text-accent" />
+                  <p className="font-medium mt-1">
                     {isDragging ? (
                       'Drop your resume to upload'
                     ) : (
                       <>
                         {/* Phones and tablets can't drag files, so they get a tap prompt */}
-                        <span className="pointer-coarse:hidden">Click or drag resume here</span>
+                        <span className="pointer-coarse:hidden">
+                          Drop your resume here, or <span className="text-accent underline underline-offset-2">choose a file</span>
+                        </span>
                         <span className="hidden pointer-coarse:inline">Tap to choose your resume</span>
                       </>
                     )}
                   </p>
-                  <p className="text-gray-500 text-sm">PDF, up to 5 MB</p>
+                  <p className="text-muted text-sm">PDF, up to 5 MB</p>
                 </>
               )}
             </div>
@@ -175,7 +184,7 @@ export function DiscoveryGallery({
             <ErrorBanner message="Couldn't load profile details for these contacts. Please try a new search." />
           )}
           {missingDetails > 0 && (
-            <p className="text-gray-500 text-sm">
+            <p className="text-muted text-sm">
               Profile details couldn't be loaded for {missingDetails} of {leads.length} people, so they won't be scored.
             </p>
           )}
@@ -184,51 +193,45 @@ export function DiscoveryGallery({
 
         {isLoading ? (
           <div className="flex justify-center py-20">
-            <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+            <Spinner />
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {leads.length > 0 ? (
               leads.map((lead) => (
-                <div key={lead.id} className="backdrop-blur-xl bg-white/5 rounded-2xl border border-white/10 p-6 hover:bg-white/10 transition-colors">
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-slate-800 shrink-0 overflow-hidden border border-white/10">
-                      {lead.profile_image_url ? (
-                        <img 
-                          src={lead.profile_image_url} 
-                          className="w-full h-full object-cover" 
-                          referrerPolicy="no-referrer" 
-                          alt={lead.full_name}
-                        />
-                      ) : <User className="m-3 text-gray-500" />}
+                <div key={lead.id} className="rounded-xl border border-rule bg-card p-5">
+                  <div className="flex items-start gap-4">
+                    <Avatar name={lead.full_name} src={lead.profile_image_url} />
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold truncate">{lead.full_name}</h3>
+                      <p className="text-muted text-sm line-clamp-2">{lead.job_title}</p>
                     </div>
-                    <div className="min-w-0">
-                      <h3 className="text-white font-semibold truncate">{lead.full_name}</h3>
-                      <p className="text-cyan-400 text-sm truncate">{lead.job_title}</p>
-                      <a
-                        href={lead.linkedin_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 mt-1 text-gray-400 hover:text-cyan-300 transition-colors"
-                      >
-                        <Linkedin className="w-4 h-4" />
-                        <span className="text-sm">View Profile</span>
-                      </a>
-                    </div>
+                    <a
+                      href={lead.linkedin_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${lead.full_name} on LinkedIn`}
+                      className="shrink-0 inline-flex items-center gap-1 text-sm text-accent hover:text-accent-hover"
+                    >
+                      <Linkedin className="w-4 h-4" />
+                      <span className="hidden sm:inline">Profile</span>
+                    </a>
                   </div>
-                  <p className="text-gray-400 text-sm line-clamp-3 italic">"{lead.search_description}"</p>
+                  {lead.search_description && (
+                    <p className="mt-3 text-sm text-muted line-clamp-3">{lead.search_description}</p>
+                  )}
                 </div>
               ))
             ) : loadFailed ? (
               <LoadError onRetry={reload} />
             ) : (
               <div className="col-span-full text-center py-10">
-                <p className="text-gray-500">No leads found for this search. Try a different company.</p>
+                <p className="text-muted">No leads found for this search. Try a different company.</p>
               </div>
             )}
           </div>
         )}
       </motion.div>
-    </div>
+    </Page>
   );
 }

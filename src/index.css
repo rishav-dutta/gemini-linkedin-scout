@@ -1,27 +1,56 @@
 @import 'tailwindcss';
 
 /*
-  The default border color has changed to `currentcolor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
+  Colours are CSS variables so the whole app switches to dark mode by
+  redefining them below; utilities like bg-paper or text-muted follow along.
 */
+@theme {
+  --font-serif: 'Source Serif 4', Georgia, serif;
+
+  --color-paper: #fbfaf7;
+  --color-card: #ffffff;
+  --color-ink: #22211f;
+  --color-muted: #6b6862;
+  --color-rule: #e4e1da;
+  --color-accent: #1d4ed8;
+  --color-accent-hover: #1e40af;
+  --color-accent-soft: #e8eefc;
+  --color-danger: #b42318;
+  --color-danger-soft: #fdecea;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper: #171716;
+    --color-card: #1f1f1d;
+    --color-ink: #e6e4df;
+    --color-muted: #9c9890;
+    --color-rule: #34332f;
+    --color-accent: #8fb0ff;
+    --color-accent-hover: #b3caff;
+    --color-accent-soft: #232b3d;
+    --color-danger: #f3a19a;
+    --color-danger-soft: #3a2220;
+  }
+}
+
 @layer base {
+  /* Tailwind v4 defaults borders to currentColor; use the theme's rule colour instead */
   *,
   ::after,
   ::before,
   ::backdrop,
   ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
+    border-color: var(--color-rule);
   }
-}
 
-/*
-  Tailwind CSS v4 no longer gives buttons a pointer cursor; keep the v3 behavior.
-*/
-@layer base {
+  html {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    color-scheme: light dark;
+  }
+
+  /* Tailwind CSS v4 no longer gives buttons a pointer cursor; keep the v3 behavior. */
   button:not(:disabled),
   [role='button']:not(:disabled) {
     cursor: pointer;

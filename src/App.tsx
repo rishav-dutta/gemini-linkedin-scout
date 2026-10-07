@@ -87,6 +87,7 @@ function App() {
           onResumeUploaded={handleResumeUploaded} 
           onNewSearch={handleNewSearch}
           targetCompany={lastSearchedCompany} 
+          targetRole={lastSearchedRole}
           searchId={currentSearchId} // 3. Pass to Gallery
         />
       )}

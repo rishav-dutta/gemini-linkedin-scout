@@ -16,10 +16,10 @@ const missingEnv = ['VITE_SUPABASE_URL', 'VITE_SUPABASE_ANON_KEY'].filter(
 
 if (missingEnv.length > 0) {
   root.render(
-    <div className="min-h-dvh bg-gray-900 flex items-center justify-center p-4 sm:p-6">
+    <div className="min-h-dvh bg-paper flex items-center justify-center p-4 sm:p-6">
       <div className="max-w-lg text-center">
-        <h1 className="text-2xl font-bold text-white mb-3">App not configured</h1>
-        <p className="text-gray-400">
+        <h1 className="font-serif text-2xl font-semibold text-ink mb-3">App not configured</h1>
+        <p className="text-muted">
           Missing environment variables: {missingEnv.join(', ')}. Add them to .env.local
           (development) or the Vercel project settings, then rebuild.
         </p>
