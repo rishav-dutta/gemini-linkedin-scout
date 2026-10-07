@@ -10,7 +10,7 @@
 //   POST /n8n-proxy/score-resume  multipart { resume (PDF), search_id, target_company }
 //
 // Secrets (Dashboard → Edge Functions → Secrets):
-//   N8N_BASE_URL       e.g. https://n8n-backend.boar-alkaline.ts.net
+//   N8N_BASE_URL       e.g. https://your-n8n-host
 //   N8N_PROXY_SECRET   must match the n8n "Header Auth" credential (header X-Proxy-Secret)
 // Provided automatically by Supabase: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 
