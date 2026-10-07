@@ -1,7 +1,16 @@
 import { motion } from 'framer-motion';
-import { Search, Sparkles } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useState } from 'react';
-import { ErrorBanner } from './Feedback';
+import { ErrorBanner, Page } from './Feedback';
+
+const DOCS_URL = 'https://rishav-dutta.github.io/linkedin-scout/';
+
+// Filling the form from an example doesn't run a search, so it costs nothing
+const EXAMPLES = [
+  { company: 'Airtable', role: 'Product Manager' },
+  { company: 'Stripe', role: 'Data Scientist' },
+  { company: 'Notion', role: 'Designer' },
+];
 
 interface LandingScreenProps {
   onFindLeads: (companyName: string, targetRole: string) => Promise<void>;
@@ -30,107 +39,134 @@ export function LandingScreen({ onFindLeads, initialCompany = '', initialRole = 
     setIsLoading(false);
   };
 
+  const inputClass =
+    'w-full px-4 py-3 rounded-lg bg-card border border-rule text-ink placeholder:text-muted/70 focus:outline-hidden focus:border-accent focus:ring-2 focus:ring-accent/20 transition-colors';
+
   return (
-    <div className="min-h-dvh bg-linear-to-br from-gray-900 via-slate-900 to-gray-900 flex items-center justify-center p-4 sm:p-6">
+    <Page>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="w-full max-w-2xl"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="max-w-3xl mx-auto flex flex-col min-h-[calc(100dvh-2.5rem)] sm:min-h-[calc(100dvh-4rem)]"
       >
-        <div className="backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 shadow-2xl p-6 sm:p-12">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="flex items-center justify-center mb-6 sm:mb-8"
-          >
-            <Sparkles className="w-8 h-8 sm:w-12 sm:h-12 text-cyan-400 mr-3 sm:mr-4 shrink-0" />
-            <h1 className="text-3xl sm:text-5xl font-bold text-white tracking-tight">
-              LinkedIn Scout
-            </h1>
-          </motion.div>
+        <header className="flex items-center justify-between text-sm">
+          <span className="font-serif text-lg font-semibold">LinkedIn Scout</span>
+          <a href={DOCS_URL} className="text-muted hover:text-ink transition-colors">
+            How it works
+          </a>
+        </header>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-            className="text-gray-300 text-center text-base sm:text-lg mb-8 sm:mb-12"
-          >
-            Find the right people to connect with using AI intelligence
-          </motion.p>
+        <main className="flex-1 flex flex-col justify-center py-12 sm:py-16">
+          <h1 className="text-balance font-serif font-semibold text-4xl sm:text-5xl leading-tight tracking-tight max-w-2xl">
+            Find the right people to reach out to.
+          </h1>
+          <p className="mt-4 text-lg text-muted max-w-xl">
+            Enter a company and a role. You’ll see who works there, then upload your resume to rank them by how
+            closely their background matches yours.
+          </p>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-            >
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Target Company
-              </label>
-              <input
-                type="text"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="e.g., Google, Meta, Stripe"
-                className="w-full px-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-cyan-400/50 focus:border-transparent backdrop-blur-xs transition-all"
-                required
-              />
-            </motion.div>
+          <form onSubmit={handleSubmit} className="mt-10">
+            <div className="grid gap-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+              <div>
+                <label htmlFor="company" className="block text-sm font-medium mb-1.5">
+                  Company
+                </label>
+                <input
+                  id="company"
+                  type="text"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="e.g., Google, Meta, Stripe"
+                  className={inputClass}
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="role" className="block text-sm font-medium mb-1.5">
+                  Role or team
+                </label>
+                <input
+                  id="role"
+                  type="text"
+                  value={targetRole}
+                  onChange={(e) => setTargetRole(e.target.value)}
+                  placeholder="e.g., Engineering, Product, Sales"
+                  className={inputClass}
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="h-[50px] px-6 rounded-lg bg-accent hover:bg-accent-hover text-white dark:text-paper font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/40 border-t-white dark:border-paper/40 dark:border-t-paper rounded-full animate-spin" />
+                    Searching…
+                  </>
+                ) : (
+                  <>
+                    <Search className="w-4 h-4" />
+                    Find people
+                  </>
+                )}
+              </button>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.6, duration: 0.5 }}
-            >
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Target Department/Role
-              </label>
-              <input
-                type="text"
-                value={targetRole}
-                onChange={(e) => setTargetRole(e.target.value)}
-                placeholder="e.g., Engineering, Product, Sales"
-                className="w-full px-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-cyan-400/50 focus:border-transparent backdrop-blur-xs transition-all"
-                required
-              />
-            </motion.div>
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
+              <span className="text-muted">Try</span>
+              {EXAMPLES.map((example) => (
+                <button
+                  key={example.company}
+                  type="button"
+                  onClick={() => {
+                    setCompanyName(example.company);
+                    setTargetRole(example.role);
+                    setError(null);
+                  }}
+                  className="px-3 py-1 rounded-full border border-rule text-muted hover:text-ink hover:border-muted transition-colors"
+                >
+                  {example.company} · {example.role}
+                </button>
+              ))}
+            </div>
 
-            <motion.button
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7, duration: 0.5 }}
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-4 px-6 rounded-xl bg-linear-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-semibold flex items-center justify-center gap-3 transition-all shadow-lg hover:shadow-cyan-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Searching...
-                </>
-              ) : (
-                <>
-                  <Search className="w-5 h-5" />
-                  Find Contacts
-                </>
-              )}
-            </motion.button>
-
-            {error && <ErrorBanner message={error} />}
+            {error && (
+              <div className="mt-6">
+                <ErrorBanner message={error} />
+              </div>
+            )}
           </form>
-        </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 0.5 }}
-          className="mt-8 text-center text-gray-500 text-sm"
-        >
-          Match your skills with the right people to connect with
-        </motion.div>
+          <ol className="mt-14 grid gap-6 sm:grid-cols-3 text-sm border-t border-rule pt-8">
+            <li>
+              <span className="font-serif text-lg font-semibold">1. Search</span>
+              <p className="mt-1 text-muted">People in that role at the company appear in about a second.</p>
+            </li>
+            <li>
+              <span className="font-serif text-lg font-semibold">2. Upload</span>
+              <p className="mt-1 text-muted">Add your resume as a PDF once their profiles have loaded.</p>
+            </li>
+            <li>
+              <span className="font-serif text-lg font-semibold">3. Reach out</span>
+              <p className="mt-1 text-muted">Start with the best matches. Each score comes with a reason.</p>
+            </li>
+          </ol>
+        </main>
+
+        <footer className="text-xs text-muted">
+          Built by{' '}
+          <a href="https://linkedin.com/in/duttarishav" className="underline underline-offset-2 hover:text-ink">
+            Rishav Dutta
+          </a>{' '}
+          ·{' '}
+          <a href="https://github.com/rishav-dutta/linkedin-scout" className="underline underline-offset-2 hover:text-ink">
+            Source
+          </a>
+        </footer>
       </motion.div>
-    </div>
+    </Page>
   );
 }

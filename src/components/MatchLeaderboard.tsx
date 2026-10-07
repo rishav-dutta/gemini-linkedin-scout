@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
-import { ChevronDown, ChevronUp, Linkedin, Trophy, User } from 'lucide-react';
+import { ChevronDown, Linkedin } from 'lucide-react';
 import { useState } from 'react';
 import { isScored, type LinkedInLead } from '../lib/supabase';
 import { useLeads } from '../lib/useLeads';
-import { BackButton, LoadError } from './Feedback';
+import { Avatar, BackButton, LoadError, Page, Spinner } from './Feedback';
 
 interface MatchLeaderboardProps {
   onBack: () => void;
@@ -21,164 +21,144 @@ function titleWithCompany(lead: LinkedInLead): string {
 
 export function MatchLeaderboard({ onBack, onNewSearch, targetCompany, searchId }: MatchLeaderboardProps) {
   const { leads: rows, isLoading, loadFailed, reload } = useLeads(searchId, 'similarity_score');
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  // 'top' opens the best match's reasoning until the visitor opens or closes one themselves
+  const [expandedId, setExpandedId] = useState<number | 'top' | null>('top');
 
   // Scored leads first (already sorted by score), then any Gemini skipped
   const leads = [...rows.filter(isScored), ...rows.filter((lead) => !isScored(lead))];
-
-  const toggleExpanded = (id: number) => {
-    setExpandedId(expandedId === id ? null : id);
-  };
+  const scoredCount = rows.filter(isScored).length;
 
   if (isLoading) {
     return (
-      <div className="min-h-dvh bg-linear-to-br from-gray-900 via-slate-900 to-gray-900 flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
-      </div>
+      <Page>
+        <div className="min-h-[80dvh] flex items-center justify-center">
+          <Spinner />
+        </div>
+      </Page>
     );
   }
 
   return (
-    <div className="min-h-dvh bg-linear-to-br from-gray-900 via-slate-900 to-gray-900 p-4 sm:p-6">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-6xl mx-auto"
-      >
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+    <Page>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-3xl mx-auto">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <BackButton label="Upload another resume" onClick={onBack} />
-          <button
-            onClick={onNewSearch}
-            className="text-gray-400 hover:text-cyan-300 transition-colors text-sm font-medium"
-          >
+          <button onClick={onNewSearch} className="text-muted hover:text-ink transition-colors text-sm">
             New search
           </button>
         </div>
 
-        <div className="mb-8 flex items-center gap-3 sm:gap-4">
-          <Trophy className="w-8 h-8 sm:w-10 sm:h-10 text-yellow-400 shrink-0" />
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2 break-words">Best Matches at {targetCompany}</h1>
-            <p className="text-gray-400 text-base sm:text-lg">Ranked by how well you align with them</p>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-balance font-serif font-semibold text-3xl sm:text-4xl tracking-tight break-words">
+            Best matches at {targetCompany}
+          </h1>
+          <p className="mt-2 text-muted">
+            {scoredCount > 0
+              ? 'Ranked by how closely their background matches your resume. Start at the top.'
+              : 'Ranked by how closely their background matches your resume.'}
+          </p>
         </div>
 
-        <div className="space-y-4">
-          {leads.length > 0 ? (
-            leads.map((lead, index) => {
+        {leads.length > 0 ? (
+          <ol className="rounded-xl border border-rule bg-card divide-y divide-rule">
+            {leads.map((lead, index) => {
               const scored = isScored(lead);
-              const isTop = scored && index < 3;
-              const isExpanded = expandedId === lead.id;
-              const rank = scored ? index + 1 : '–';
-              const rankStyle = isTop ? 'bg-linear-to-br from-green-400 to-emerald-500 text-white' : 'bg-white/10 text-gray-400';
+              const isExpanded = expandedId === 'top' ? index === 0 && scored : expandedId === lead.id;
+              const score = Math.max(0, Math.min(100, lead.similarity_score ?? 0));
 
               return (
-                <motion.div
+                <motion.li
                   key={lead.id || index}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className={`backdrop-blur-xl bg-white/5 rounded-2xl border transition-all ${
-                    isTop ? 'border-green-400 shadow-lg shadow-green-500/20' : 'border-white/10'
-                  } overflow-hidden`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="p-4 sm:p-6"
                 >
-                  <div className="p-4 sm:p-6">
-                    <div className="flex items-start gap-3 sm:gap-4">
-                      <div className="flex items-center gap-4 shrink-0">
-                        <div className={`hidden sm:flex w-12 h-12 rounded-full items-center justify-center font-bold text-lg ${rankStyle}`}>
-                          {rank}
-                        </div>
-                        
-                        <div className="relative">
-                          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border border-white/10">
-                            {lead.profile_image_url ? (
-                              <img 
-                                src={lead.profile_image_url} 
-                                alt={lead.full_name} 
-                                className="w-full h-full object-cover"
-                                referrerPolicy="no-referrer"
-                              />
-                            ) : (
-                              <User className="w-6 h-6 sm:w-8 sm:h-8 text-gray-500" />
-                            )}
-                          </div>
-                          {/* On phones the rank sits on the photo to leave room for the name */}
-                          <div className={`sm:hidden absolute -top-1 -left-1 w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ring-2 ring-slate-900 ${rankStyle}`}>
-                            {rank}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex-1 min-w-0 flex items-start justify-between gap-3 sm:gap-4">
-                        <div className="min-w-0">
-                          <h3 className="text-white font-semibold text-lg sm:text-xl mb-0.5 break-words">{lead.full_name}</h3>
-                          <p className="text-cyan-400 text-sm font-medium mb-2 break-words">{titleWithCompany(lead)}</p>
-                          <a 
-                            href={lead.linkedin_url} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="inline-flex items-center gap-1 text-gray-400 hover:text-cyan-300 transition-colors"
-                          >
-                            <Linkedin className="w-4 h-4" />
-                            <span className="text-sm">View Profile</span>
-                          </a>
-                        </div>
-                        <div className="text-right shrink-0">
-                          {scored ? (
-                            <>
-                              <div className={`text-2xl sm:text-3xl font-bold ${isTop ? 'text-green-400' : 'text-cyan-400'}`}>
-                                {lead.similarity_score}%
-                              </div>
-                              <div className="text-gray-400 text-xs sm:text-sm">
-                                <span className="sm:hidden">Match</span>
-                                <span className="hidden sm:inline">Compatibility</span>
-                              </div>
-                            </>
-                          ) : (
-                            <div className="text-gray-500 text-sm pt-2">Not scored</div>
-                          )}
-                        </div>
-                      </div>
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <span className="hidden sm:block font-serif font-semibold text-xl text-muted w-6 shrink-0 pt-3 text-center">
+                      {scored ? index + 1 : '–'}
+                    </span>
+                    <div className="relative shrink-0">
+                      <Avatar name={lead.full_name} src={lead.profile_image_url} className="w-11 h-11 sm:w-14 sm:h-14 text-sm" />
+                      {/* On phones the rank sits on the photo to leave room for the name */}
+                      <span className="sm:hidden absolute -top-1 -left-1 w-5 h-5 rounded-full bg-ink text-paper text-[11px] font-semibold flex items-center justify-center ring-2 ring-card">
+                        {scored ? index + 1 : '–'}
+                      </span>
                     </div>
 
-                    {/* Full width on phones; lined up with the name column (rank + photo + gaps = 9rem) on larger screens */}
-                    <div className="mt-3 sm:mt-2 sm:pl-36">
-                      <p className="text-gray-300 text-sm leading-relaxed mb-4">{lead.search_description}</p>
-                      
+                    <div className="flex-1 min-w-0 flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-lg leading-snug break-words">{lead.full_name}</h3>
+                        <p className="text-muted text-sm break-words">{titleWithCompany(lead)}</p>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        {scored ? (
+                          <>
+                            <div className="text-2xl font-semibold tabular-nums leading-none">
+                              {score}
+                              <span className="text-sm text-muted font-normal">/100</span>
+                            </div>
+                            <div className="mt-2 ml-auto h-1.5 w-16 sm:w-20 rounded-full bg-rule overflow-hidden" aria-hidden="true">
+                              <div className="h-full rounded-full bg-accent" style={{ width: `${score}%` }} />
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-muted text-sm pt-1">Not scored</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Full width on phones; lined up with the name (rank + photo + gaps = 7rem) on larger screens */}
+                  <div className="sm:pl-28">
+                    {lead.search_description && (
+                      <p className="mt-3 text-sm text-muted leading-relaxed">{lead.search_description}</p>
+                    )}
+
+                    <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
                       {lead.scoring_reasoning && (
-                        <button 
-                          onClick={() => toggleExpanded(lead.id)} 
-                          className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors text-sm font-medium"
+                        <button
+                          onClick={() => setExpandedId(isExpanded ? null : lead.id)}
+                          aria-expanded={isExpanded}
+                          className="inline-flex items-center gap-1 font-medium text-accent hover:text-accent-hover"
                         >
-                          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                          {isExpanded ? 'Hide Reasoning' : 'Show Reasoning'}
+                          Why this score
+                          <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                         </button>
                       )}
+                      <a
+                        href={lead.linkedin_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-muted hover:text-ink"
+                      >
+                        <Linkedin className="w-4 h-4" />
+                        View on LinkedIn
+                      </a>
                     </div>
 
                     {isExpanded && lead.scoring_reasoning && (
-                      <motion.div 
-                        initial={{ opacity: 0, height: 0 }} 
-                        animate={{ opacity: 1, height: 'auto' }} 
-                        className="mt-4 pt-4 border-t border-white/10"
+                      <motion.p
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="mt-3 text-sm leading-relaxed border-l-2 border-accent pl-3"
                       >
-                        <h4 className="text-white font-semibold mb-2 text-sm">AI Analysis:</h4>
-                        <p className="text-gray-300 text-sm leading-relaxed">{lead.scoring_reasoning}</p>
-                      </motion.div>
+                        {lead.scoring_reasoning}
+                      </motion.p>
                     )}
                   </div>
-                </motion.div>
+                </motion.li>
               );
-            })
-          ) : loadFailed ? (
-            <LoadError onRetry={reload} />
-          ) : (
-            <div className="text-center py-20 bg-white/5 rounded-2xl border border-dashed border-white/10">
-              <p className="text-gray-500">No matches found for this search.</p>
-            </div>
-          )}
-        </div>
+            })}
+          </ol>
+        ) : loadFailed ? (
+          <LoadError onRetry={reload} />
+        ) : (
+          <div className="text-center py-20 rounded-xl border border-dashed border-rule">
+            <p className="text-muted">No matches found for this search.</p>
+          </div>
+        )}
       </motion.div>
-    </div>
+    </Page>
   );
 }
