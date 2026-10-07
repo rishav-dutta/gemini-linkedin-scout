@@ -137,6 +137,33 @@ footer a { color: var(--muted); }
   td:first-child { white-space: normal; }
   .num td:first-child { white-space: nowrap; }
 }
+
+.print-only { display: none; }
+
+/* The PDF version (docs/linkedin-scout.pdf) is printed from this page */
+@media print {
+  @page { size: Letter; margin: 0.6in 0.65in; }
+  :root { --bg: #fff; --text: #22211f; --muted: #5f5c56; --rule: #dedad2; --link: #1d4ed8; --panel: #f3f1ec; --shadow: none; }
+  body { font-size: 10.5pt; line-height: 1.55; background: #fff; }
+  .top, .web-only, footer { display: none; }
+  .print-only { display: block; }
+  main { max-width: none; padding: 0; }
+  h1 { font-size: 26pt; margin-top: 0; }
+  h2 { font-size: 15pt; margin-top: 1.3rem; break-after: avoid; }
+  th, td { padding: 0.35rem 0.75rem 0.35rem 0; }
+  table { margin: 0.5rem 0 1rem; }
+  .lede { font-size: 13pt; }
+  .wide { margin-left: 0; margin-right: 0; }
+  figure, .panel, .meta, tr { break-inside: avoid; }
+  hr { display: none; }
+  figure { margin: 1.25rem 0; }
+  .panel { padding: 0.75rem; }
+  .panel > img { max-height: 3.3in; width: auto; max-width: 100%; margin: 0 auto; }
+  figure img { box-shadow: none; border: 1px solid var(--rule); }
+  .phones { max-width: 400px; }
+  a { text-decoration: none; }
+  .print-links { font-family: var(--sans); font-size: 9pt; color: var(--muted); margin: -0.25rem 0 1rem; }
+}
 </style>
 </head>
 <body>
@@ -153,6 +180,7 @@ footer a { color: var(--muted); }
 
 <h1>LinkedIn Scout</h1>
 <p class="lede">A tool I built to find who to reach out to at a company, ranked by how well their background matches my resume.</p>
+<p class="print-only print-links">Rishav Dutta · linkedin.com/in/duttarishav<br/>Live app: rishav-linkedin-scout.vercel.app<br/>Code: github.com/rishav-dutta/linkedin-scout · Write-up: rishav-dutta.github.io/linkedin-scout</p>
 
 <dl class="meta">
   <div><dt>Role</dt><dd>Solo: product, design<br/>and engineering</dd></div>
@@ -252,10 +280,10 @@ footer a { color: var(--muted); }
 
 <h2>About me</h2>
 <p>I’m Rishav Dutta, AI Product Owner at SquadLocker. I have 6+ years of product management experience across mobility, logistics and e-commerce, at Zoomcar, Blackbuck and IUVA Foods, and an MBA from Simon Business School at the University of Rochester (2026). I built LinkedIn Scout on my own, as product manager, designer and developer.</p>
-<p class="links">
+<p class="links web-only">
   <a href="https://linkedin.com/in/duttarishav">LinkedIn →</a>
   <a href="https://github.com/rishav-dutta">GitHub →</a>
-  <a href="https://github.com/rishav-dutta/linkedin-scout/raw/main/linkedin_scout_documentation.pdf">Original write-up, February 2026 (PDF) →</a>
+  <a href="linkedin-scout.pdf">This page as a PDF →</a>
 </p>
 
 </main>
